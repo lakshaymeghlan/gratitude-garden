@@ -1,13 +1,18 @@
 import SwiftUI
 
-/// Garden home screen. The garden itself is the real pixel-art `GardenSceneView`; everything else is
-/// warm text. No SF Symbols, no emoji — the scene carries all the visual weight.
+/// Garden home screen. The pixel-art `GardenSceneView` is the hero; everything else is warm text.
 struct ContentView: View {
     @State private var viewModel: GardenViewModel
-    @State private var showingReminders = false
+    @State private var showingJournal = false
+    @State private var showingSettings = false
+
     @Environment(AppRouter.self) private var router
     @Environment(NotificationManager.self) private var notifications
+    @Environment(AppPreferencesModel.self) private var preferences
     @Environment(\.scenePhase) private var scenePhase
+
+    private let haptics: HapticsPlaying = SystemHaptics()
+    private let sound: SoundPlaying = SystemSoundPlayer()
 
     init(viewModel: GardenViewModel = GardenViewModel()) {
         _viewModel = State(initialValue: viewModel)
@@ -24,9 +29,8 @@ struct ContentView: View {
                         .aspectRatio(1.1, contentMode: .fit)
                         .frame(maxWidth: .infinity)
                         .clipShape(RoundedRectangle(cornerRadius: 22))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 22)
-                                .strokeBorder(.black.opacity(0.06), lineWidth: 1))
+                        .overlay(RoundedRectangle(cornerRadius: 22)
+                            .strokeBorder(.black.opacity(0.06), lineWidth: 1))
 
                     stateText
                     statsRow
@@ -37,10 +41,10 @@ struct ContentView: View {
             .navigationTitle("Gratitude Garden")
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    Button("Reminders") { showingReminders = true }
+                    Button("Journal") { showingJournal = true }
                 }
                 ToolbarItem(placement: .primaryAction) {
-                    Button("Add") { router.requestCompose() }
+                    Button("Settings") { showingSettings = true }
                 }
             }
             .safeAreaInset(edge: .bottom) {
@@ -57,15 +61,30 @@ struct ContentView: View {
             }
             .sheet(isPresented: $router.isComposing) {
                 EntryComposerView { text, kind in
-                    if viewModel.save(text: text, kind: kind) {
+                    if let outcome = viewModel.save(text: text, kind: kind) {
                         router.isComposing = false
-                        // State changed → reschedule (today is now tended, so we won't ping today).
+                        playFeedback(for: outcome)
                         Task { await notifications.refreshSchedule() }
                     }
                 }
             }
-            .sheet(isPresented: $showingReminders) {
-                NavigationStack { NotificationSettingsView() }
+            .sheet(isPresented: $showingJournal) {
+                NavigationStack { JournalView(entries: viewModel.entries) }
+            }
+            .sheet(isPresented: $showingSettings) {
+                NavigationStack {
+                    SettingsView(entries: viewModel.entries) { viewModel.resetGarden() }
+                }
+            }
+            .fullScreenCover(
+                isPresented: Binding(get: { !preferences.hasCompletedOnboarding }, set: { _ in }),
+                onDismiss: { router.requestCompose() }   // lead straight into the first entry
+            ) {
+                OnboardingView { preferences.completeOnboarding() }
+            }
+            .task {
+                viewModel.onAppear()
+                await notifications.onForeground()
             }
             .onChange(of: scenePhase) { _, newPhase in
                 if newPhase == .active {
@@ -73,6 +92,19 @@ struct ContentView: View {
                     Task { await notifications.onForeground() }
                 }
             }
+        }
+    }
+
+    // MARK: Feedback
+
+    private func playFeedback(for outcome: EntrySaveOutcome) {
+        if preferences.hapticsEnabled {
+            if outcome.didRevive { haptics.revival() }
+            else if outcome.reachedFirstBloom { haptics.firstBloom() }
+            else { haptics.entrySaved() }
+        }
+        if preferences.soundEnabled {
+            sound.play(outcome.didRevive ? .revival : .entry)
         }
     }
 
@@ -90,6 +122,7 @@ struct ContentView: View {
         }
         .frame(maxWidth: .infinity)
         .animation(.easeInOut, value: viewModel.showWelcomeBack)
+        .accessibilityElement(children: .combine)
     }
 
     private var statsRow: some View {
@@ -109,13 +142,20 @@ struct ContentView: View {
         .frame(maxWidth: .infinity)
         .padding(.vertical, 12)
         .background(.fill.quaternary, in: RoundedRectangle(cornerRadius: 14))
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(label): \(value)")
     }
 
     private var recentEntries: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("Recent")
-                .font(.headline)
-                .frame(maxWidth: .infinity, alignment: .leading)
+            HStack {
+                Text("Recent").font(.headline)
+                Spacer()
+                if !viewModel.entries.isEmpty {
+                    Button("See all") { showingJournal = true }
+                        .font(.subheadline)
+                }
+            }
 
             if viewModel.entries.isEmpty {
                 Text(GardenCopy.emptyJournalPrompt)
@@ -142,6 +182,7 @@ struct ContentView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding()
         .background(.fill.quaternary, in: RoundedRectangle(cornerRadius: 12))
+        .accessibilityElement(children: .combine)
     }
 
     private var lastEntryText: String {
@@ -154,4 +195,5 @@ struct ContentView: View {
     ContentView()
         .environment(AppRouter())
         .environment(NotificationManager())
+        .environment(AppPreferencesModel())
 }
