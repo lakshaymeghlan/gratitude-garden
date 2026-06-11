@@ -1,0 +1,876 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		04D42CB2AD12A9FAE44C9570 /* GardenTimelinePlanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC3B64A77BFD387D3073E38F /* GardenTimelinePlanner.swift */; };
+		09CCDB17F1CCBE96A233706B /* GratitudeGardenWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F0F84D239505ECA40F5A56A /* GratitudeGardenWidget.swift */; };
+		0BBFB9419F2144162F1C6319 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43BA87ED3C2A097B7465B1D2 /* ContentView.swift */; };
+		0F148FB71CEA35DC41C860E4 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6D0898B03200B7ACD6CD0F37 /* Foundation.framework */; };
+		10E5EEEC942DE33251902DFD /* GardenJournal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27BF5BD74584B5CD2E8A7015 /* GardenJournal.swift */; };
+		17031E23B7B0C9F633E0A83C /* Vitality.swift in Sources */ = {isa = PBXBuildFile; fileRef = 890F0F6A6AC771BBE3BC68A0 /* Vitality.swift */; };
+		24BA86F512C7C5E544115C9D /* GardenPalette.swift in Sources */ = {isa = PBXBuildFile; fileRef = 409FD9021F8EEC83CAEB41A8 /* GardenPalette.swift */; };
+		26D71C44DF4DB8219D682361 /* GardenScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC83B24AB257C163823DF0E8 /* GardenScene.swift */; };
+		2769C95A2A1CD546F2657021 /* GardenCopy.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1C603A22546C243F5D43B4D /* GardenCopy.swift */; };
+		2A63D382D9D172967290D806 /* JournalGrouping.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F8600FA50147D218754AE9A /* JournalGrouping.swift */; };
+		2F05FA76649EA28C2D4107FF /* GardenSnapshot+Preview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 214F1E30E701531F8439B2CB /* GardenSnapshot+Preview.swift */; };
+		309DF1E8D85D54F31D162D8C /* GardenStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D089BB1937CB353E7479DCE /* GardenStyle.swift */; };
+		30B82964924C50EF951C7BD0 /* AppGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD8DCD85A490DEACCA5D04E5 /* AppGroup.swift */; };
+		31CE02A9F916F159034A79E9 /* GrowthStage.swift in Sources */ = {isa = PBXBuildFile; fileRef = A67935F59B5DDA691D53B437 /* GrowthStage.swift */; };
+		34399CB527287CF99822D8C9 /* GardenDeepLink.swift in Sources */ = {isa = PBXBuildFile; fileRef = E882E2E2F7233014E91613EC /* GardenDeepLink.swift */; };
+		377F7366776357AE2038FB83 /* GardenSprites.swift in Sources */ = {isa = PBXBuildFile; fileRef = B579C37DC12DF7507B88053F /* GardenSprites.swift */; };
+		392CD9A4915BCF9087D4F0F2 /* GardenStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8981D08E9C86787D6B80E901 /* GardenStore.swift */; };
+		39DCBA3DEE20FDD6EBE886F2 /* EntryComposerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 531D5274D50CF58A2A198CB4 /* EntryComposerView.swift */; };
+		3A40ED0E0F56FA2D6942AC89 /* GardenDeepLink.swift in Sources */ = {isa = PBXBuildFile; fileRef = E882E2E2F7233014E91613EC /* GardenDeepLink.swift */; };
+		3C9F11A2861365A375093F37 /* UserNotificationServices.swift in Sources */ = {isa = PBXBuildFile; fileRef = B56F7C45D4A152015C8B5EF2 /* UserNotificationServices.swift */; };
+		3EFA7288BCF543EE0E1C6B14 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6D0898B03200B7ACD6CD0F37 /* Foundation.framework */; };
+		3F1E2DD7AB0DA4C652FDC09E /* NotificationPlanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1892B351CC2F763901C4784 /* NotificationPlanner.swift */; };
+		427AF9B50C5DCE8922E295E9 /* NotificationCopy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B1B0CC14C4A38F120BC6620 /* NotificationCopy.swift */; };
+		46A9A3523E671DE645992455 /* PixelSprite.swift in Sources */ = {isa = PBXBuildFile; fileRef = B026CB2D025036B56A9CB525 /* PixelSprite.swift */; };
+		4A85E099B948EB789B1AD313 /* Entry.swift in Sources */ = {isa = PBXBuildFile; fileRef = D01E9C5ACC68DF3488796688 /* Entry.swift */; };
+		4D2DBA210C04C10180AE213C /* SharedContainerLocating.swift in Sources */ = {isa = PBXBuildFile; fileRef = C35AB6199C643A959C581100 /* SharedContainerLocating.swift */; };
+		4E2A578A6E26C8DE283238B6 /* WidgetReloading.swift in Sources */ = {isa = PBXBuildFile; fileRef = B913A69DD9DCE2ED6D2946D2 /* WidgetReloading.swift */; };
+		50C107E869CB12C8C4FC4317 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 824757DBD375C25A3101EC94 /* OnboardingView.swift */; };
+		532AC6DB61731AE49650A471 /* GrowthStage.swift in Sources */ = {isa = PBXBuildFile; fileRef = A67935F59B5DDA691D53B437 /* GrowthStage.swift */; };
+		54612E704EEF9ED05729ABE1 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6D0898B03200B7ACD6CD0F37 /* Foundation.framework */; };
+		560D619E12DEA393E6F5AEE7 /* GardenStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8981D08E9C86787D6B80E901 /* GardenStore.swift */; };
+		5BDB68FEC5C023E68EE5CF87 /* AppRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EC74ED5AF49DEBBABCBDD5E /* AppRouter.swift */; };
+		5C59B7A4C62FF5F15922A725 /* AppPreferences.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53F86E3E5DA57F6A8159C5D4 /* AppPreferences.swift */; };
+		62177B82638127E9679CCA0E /* JournalExport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D4A605B3BFA4CF08422CDA8 /* JournalExport.swift */; };
+		68543E76C975DC3702049903 /* GardenSprites.swift in Sources */ = {isa = PBXBuildFile; fileRef = B579C37DC12DF7507B88053F /* GardenSprites.swift */; };
+		68F9770AD488C02871A7D271 /* GardenTimelinePlanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC3B64A77BFD387D3073E38F /* GardenTimelinePlanner.swift */; };
+		6F19495AD7F1BB4745803BEA /* NotificationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D6DF657BAF60A1AF1F652D3 /* NotificationTests.swift */; };
+		70F80F46C51B821D79671CF1 /* WidgetReloading.swift in Sources */ = {isa = PBXBuildFile; fileRef = B913A69DD9DCE2ED6D2946D2 /* WidgetReloading.swift */; };
+		7D35150E67781FE3DC665577 /* GardenRules.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D8B74157D83310A3C6B2029 /* GardenRules.swift */; };
+		81FC78741D00CFBA343FAB0C /* GardenState.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBF4EB21F6A50CE6E404BB55 /* GardenState.swift */; };
+		87073EE527AB2160DC7AD3F8 /* AppGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD8DCD85A490DEACCA5D04E5 /* AppGroup.swift */; };
+		880953B24329A30838360109 /* NotificationPlanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1892B351CC2F763901C4784 /* NotificationPlanner.swift */; };
+		8AA908D0E68EF4D2F0BDFD19 /* NotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A8AAB210BC409F52FD4DE05 /* NotificationManager.swift */; };
+		8E8071D9635CDECB1516D30E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B7089EFDE9443A14D715886D /* Assets.xcassets */; };
+		9091301543BC67525FAE506E /* WidgetCenterReloader.swift in Sources */ = {isa = PBXBuildFile; fileRef = F27446E6D1610AA8745671FB /* WidgetCenterReloader.swift */; };
+		91BE6EC15E89D1C4B2DA978E /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44CA75F5405528E75E9EEEB1 /* SettingsView.swift */; };
+		91E84FDEFFE92A51243EF226 /* GardenStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D089BB1937CB353E7479DCE /* GardenStyle.swift */; };
+		932688B0ECEB74E41A8281C5 /* GardenJournal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27BF5BD74584B5CD2E8A7015 /* GardenJournal.swift */; };
+		962C3C86C4B7FD454A639F37 /* JournalExport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D4A605B3BFA4CF08422CDA8 /* JournalExport.swift */; };
+		9FC63B695EA37669707D2655 /* GardenCopy.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1C603A22546C243F5D43B4D /* GardenCopy.swift */; };
+		A2180FF465F49C78E0928458 /* SoundPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = C919D7F78DB5E388D2B8DF3C /* SoundPlayer.swift */; };
+		A276FADCE1536374DC5CC971 /* SharedContainerLocating.swift in Sources */ = {isa = PBXBuildFile; fileRef = C35AB6199C643A959C581100 /* SharedContainerLocating.swift */; };
+		A6EBC0B97A3083468471386B /* NotificationModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7EF28814E610F17B079CCDD /* NotificationModels.swift */; };
+		A76AFC2356701467ED25D5F3 /* AppPreferencesModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2B569F84956E83E4D774FB2 /* AppPreferencesModel.swift */; };
+		A8859614097410306EF338FD /* Phase6Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF63B3B203003F852BCEDB45 /* Phase6Tests.swift */; };
+		A89AA95554589E6200D5A0D6 /* Entry.swift in Sources */ = {isa = PBXBuildFile; fileRef = D01E9C5ACC68DF3488796688 /* Entry.swift */; };
+		A96C6AA7BBD2685A26BD13FB /* GratitudeGardenApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F43FB0BBEC2F8FC32775310 /* GratitudeGardenApp.swift */; };
+		ABC92DF909BFD2E0F605C071 /* Vitality.swift in Sources */ = {isa = PBXBuildFile; fileRef = 890F0F6A6AC771BBE3BC68A0 /* Vitality.swift */; };
+		B0330AB8AE03E322678F4BC2 /* GratitudeGardenWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = BB7BA62A45F1595388C3F0DC /* GratitudeGardenWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		B18C5819DF0C684BA1B1461A /* NotificationModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7EF28814E610F17B079CCDD /* NotificationModels.swift */; };
+		B2BDC8B3BA66F790C807CB24 /* GardenStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B18701C130231D1FD6E04D25 /* GardenStoreTests.swift */; };
+		B486CBFA118A552FDB9F83E2 /* NotificationSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 016589B2E400CA5B5FB224EB /* NotificationSettingsView.swift */; };
+		B64EE92801428EFEC62BB11A /* GardenSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED6F701887B565D594F558A3 /* GardenSnapshot.swift */; };
+		B66F0606213349319ABDD936 /* GratitudeGardenWidgetBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9401047A797B149743B2EDD6 /* GratitudeGardenWidgetBundle.swift */; };
+		B990C4EA0ED84F3FB5BCE017 /* GardenRulesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73D89157219A6307F1EA1BD8 /* GardenRulesTests.swift */; };
+		BEFAB4C90EB6EEBD92D184C0 /* JournalGrouping.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F8600FA50147D218754AE9A /* JournalGrouping.swift */; };
+		BF889D3B060686352C539B7D /* NotificationCopy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B1B0CC14C4A38F120BC6620 /* NotificationCopy.swift */; };
+		BFF459461F7A27172FCFF843 /* GardenPalette.swift in Sources */ = {isa = PBXBuildFile; fileRef = 409FD9021F8EEC83CAEB41A8 /* GardenPalette.swift */; };
+		C55964C6E97C24F5CFB173F1 /* Haptics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C5F7E9D5B72AF8BFFDF72E6 /* Haptics.swift */; };
+		C6D950557F88A6B7A2952504 /* GardenRules.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D8B74157D83310A3C6B2029 /* GardenRules.swift */; };
+		C8696A6F7378EE4D2E1129E9 /* JournalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D00CF237720EA58D24C7B9E /* JournalView.swift */; };
+		CAC28BA01F480B8EF240BA1B /* GardenSnapshot+Preview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 214F1E30E701531F8439B2CB /* GardenSnapshot+Preview.swift */; };
+		CC3A937F1BE56E19297523C9 /* GardenScenePreviews.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9138E9DE5F4F2C9B5AE8F9E /* GardenScenePreviews.swift */; };
+		CEEB51E27376242ADBF6AFD3 /* GardenJournalTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 59983B700CDE5D20313542F4 /* GardenJournalTests.swift */; };
+		D7B12F9CDC319E91C193D8F9 /* PixelSprite.swift in Sources */ = {isa = PBXBuildFile; fileRef = B026CB2D025036B56A9CB525 /* PixelSprite.swift */; };
+		DB139D7DB9C9CD3824309E09 /* GardenSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED6F701887B565D594F558A3 /* GardenSnapshot.swift */; };
+		DD170E4D87877A6904CAD3AC /* GardenWidgetTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27426F2253790284B0C18490 /* GardenWidgetTests.swift */; };
+		DEE0710FF1373AC1A7501D06 /* GardenRenderingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 581BA105ACAD48DE39119703 /* GardenRenderingTests.swift */; };
+		DFBAC15543C09817797C2D44 /* PrivacyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3526662D3C7673959EABC833 /* PrivacyView.swift */; };
+		E48D78CC8E007AAB27CDED20 /* GardenState.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBF4EB21F6A50CE6E404BB55 /* GardenState.swift */; };
+		ECA08EE7F65B633D91CAAD93 /* NotificationSettingsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DF2128A9EF0B1979C51AC44 /* NotificationSettingsStore.swift */; };
+		F057AA5000548C69F42C0C0B /* GardenScenePreviews.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9138E9DE5F4F2C9B5AE8F9E /* GardenScenePreviews.swift */; };
+		F6414BAFA6701E401D2925EB /* NotificationProtocols.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27537CFF2FAB8BDFB2FBF94E /* NotificationProtocols.swift */; };
+		FBAA71A781B15FBA063F7C5E /* NotificationSettingsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DF2128A9EF0B1979C51AC44 /* NotificationSettingsStore.swift */; };
+		FBAF7A9F0B60DB77E330D8C0 /* GardenScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC83B24AB257C163823DF0E8 /* GardenScene.swift */; };
+		FBBF5B9404E865BBFADCE281 /* GardenViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E381B960E83AA1F1658AA1D5 /* GardenViewModel.swift */; };
+		FFF8F33C648BD350881FB8EC /* AppPreferences.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53F86E3E5DA57F6A8159C5D4 /* AppPreferences.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		190333EEFE93324840DCCB54 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 44E269C8981C46012C18BB4A /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 00271A65E862F16197E64BC4;
+			remoteInfo = GratitudeGardenWidgetExtension;
+		};
+		B55C577F0CA2C77808FE7050 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 44E269C8981C46012C18BB4A /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E745C74CC99C6C2B358D980A;
+			remoteInfo = GratitudeGarden;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		D7F8F0FDCFA120846BCD0564 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				B0330AB8AE03E322678F4BC2 /* GratitudeGardenWidgetExtension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		016589B2E400CA5B5FB224EB /* NotificationSettingsView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NotificationSettingsView.swift; sourceTree = "<group>"; };
+		1A8AAB210BC409F52FD4DE05 /* NotificationManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = NotificationManager.swift; path = Notifications/NotificationManager.swift; sourceTree = "<group>"; };
+		1D8B74157D83310A3C6B2029 /* GardenRules.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = GardenRules.swift; path = Rules/GardenRules.swift; sourceTree = "<group>"; };
+		214F1E30E701531F8439B2CB /* GardenSnapshot+Preview.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "GardenSnapshot+Preview.swift"; path = "Rendering/GardenSnapshot+Preview.swift"; sourceTree = "<group>"; };
+		27426F2253790284B0C18490 /* GardenWidgetTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GardenWidgetTests.swift; sourceTree = "<group>"; };
+		27537CFF2FAB8BDFB2FBF94E /* NotificationProtocols.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = NotificationProtocols.swift; path = Notifications/NotificationProtocols.swift; sourceTree = "<group>"; };
+		27BF5BD74584B5CD2E8A7015 /* GardenJournal.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = GardenJournal.swift; path = Rules/GardenJournal.swift; sourceTree = "<group>"; };
+		2DF2128A9EF0B1979C51AC44 /* NotificationSettingsStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = NotificationSettingsStore.swift; path = Storage/NotificationSettingsStore.swift; sourceTree = "<group>"; };
+		3526662D3C7673959EABC833 /* PrivacyView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PrivacyView.swift; sourceTree = "<group>"; };
+		3D089BB1937CB353E7479DCE /* GardenStyle.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = GardenStyle.swift; path = Rendering/GardenStyle.swift; sourceTree = "<group>"; };
+		409FD9021F8EEC83CAEB41A8 /* GardenPalette.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = GardenPalette.swift; path = Rendering/GardenPalette.swift; sourceTree = "<group>"; };
+		43BA87ED3C2A097B7465B1D2 /* ContentView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		44CA75F5405528E75E9EEEB1 /* SettingsView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		48CCD2655CEC7C848003B6D8 /* GratitudeGardenTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = GratitudeGardenTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		4ACD7A5D24DEE483CC4D3E0A /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		4C5F7E9D5B72AF8BFFDF72E6 /* Haptics.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Haptics.swift; path = Feedback/Haptics.swift; sourceTree = "<group>"; };
+		531D5274D50CF58A2A198CB4 /* EntryComposerView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = EntryComposerView.swift; sourceTree = "<group>"; };
+		53F86E3E5DA57F6A8159C5D4 /* AppPreferences.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AppPreferences.swift; path = Storage/AppPreferences.swift; sourceTree = "<group>"; };
+		581BA105ACAD48DE39119703 /* GardenRenderingTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GardenRenderingTests.swift; sourceTree = "<group>"; };
+		59983B700CDE5D20313542F4 /* GardenJournalTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GardenJournalTests.swift; sourceTree = "<group>"; };
+		5D6DF657BAF60A1AF1F652D3 /* NotificationTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NotificationTests.swift; sourceTree = "<group>"; };
+		5DD3FB0E392AE158F711AF2C /* GratitudeGarden.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = GratitudeGarden.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		5F0F84D239505ECA40F5A56A /* GratitudeGardenWidget.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GratitudeGardenWidget.swift; sourceTree = "<group>"; };
+		6D00CF237720EA58D24C7B9E /* JournalView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = JournalView.swift; sourceTree = "<group>"; };
+		6D0898B03200B7ACD6CD0F37 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
+		6EC74ED5AF49DEBBABCBDD5E /* AppRouter.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppRouter.swift; sourceTree = "<group>"; };
+		73D89157219A6307F1EA1BD8 /* GardenRulesTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GardenRulesTests.swift; sourceTree = "<group>"; };
+		7D4A605B3BFA4CF08422CDA8 /* JournalExport.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = JournalExport.swift; path = Journal/JournalExport.swift; sourceTree = "<group>"; };
+		824757DBD375C25A3101EC94 /* OnboardingView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = OnboardingView.swift; path = Onboarding/OnboardingView.swift; sourceTree = "<group>"; };
+		84ECBB077372CB213578A402 /* GratitudeGardenWidgetExtension.entitlements */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.entitlements; path = GratitudeGardenWidgetExtension.entitlements; sourceTree = "<group>"; };
+		890F0F6A6AC771BBE3BC68A0 /* Vitality.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Vitality.swift; path = Models/Vitality.swift; sourceTree = "<group>"; };
+		8981D08E9C86787D6B80E901 /* GardenStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = GardenStore.swift; path = Storage/GardenStore.swift; sourceTree = "<group>"; };
+		8B1B0CC14C4A38F120BC6620 /* NotificationCopy.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = NotificationCopy.swift; path = Presentation/NotificationCopy.swift; sourceTree = "<group>"; };
+		8F43FB0BBEC2F8FC32775310 /* GratitudeGardenApp.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GratitudeGardenApp.swift; sourceTree = "<group>"; };
+		8F8600FA50147D218754AE9A /* JournalGrouping.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = JournalGrouping.swift; path = Journal/JournalGrouping.swift; sourceTree = "<group>"; };
+		92DA898AFC0104D4B79AD7F9 /* GratitudeGarden.entitlements */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.entitlements; path = GratitudeGarden.entitlements; sourceTree = "<group>"; };
+		9401047A797B149743B2EDD6 /* GratitudeGardenWidgetBundle.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GratitudeGardenWidgetBundle.swift; sourceTree = "<group>"; };
+		A67935F59B5DDA691D53B437 /* GrowthStage.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = GrowthStage.swift; path = Models/GrowthStage.swift; sourceTree = "<group>"; };
+		B026CB2D025036B56A9CB525 /* PixelSprite.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PixelSprite.swift; path = Rendering/PixelSprite.swift; sourceTree = "<group>"; };
+		B18701C130231D1FD6E04D25 /* GardenStoreTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GardenStoreTests.swift; sourceTree = "<group>"; };
+		B56F7C45D4A152015C8B5EF2 /* UserNotificationServices.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = UserNotificationServices.swift; path = Notifications/UserNotificationServices.swift; sourceTree = "<group>"; };
+		B579C37DC12DF7507B88053F /* GardenSprites.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = GardenSprites.swift; path = Rendering/GardenSprites.swift; sourceTree = "<group>"; };
+		B7089EFDE9443A14D715886D /* Assets.xcassets */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		B913A69DD9DCE2ED6D2946D2 /* WidgetReloading.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = WidgetReloading.swift; path = Storage/WidgetReloading.swift; sourceTree = "<group>"; };
+		BB7BA62A45F1595388C3F0DC /* GratitudeGardenWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = GratitudeGardenWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		C35AB6199C643A959C581100 /* SharedContainerLocating.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SharedContainerLocating.swift; path = Storage/SharedContainerLocating.swift; sourceTree = "<group>"; };
+		C919D7F78DB5E388D2B8DF3C /* SoundPlayer.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SoundPlayer.swift; path = Feedback/SoundPlayer.swift; sourceTree = "<group>"; };
+		D01E9C5ACC68DF3488796688 /* Entry.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Entry.swift; path = Models/Entry.swift; sourceTree = "<group>"; };
+		D1892B351CC2F763901C4784 /* NotificationPlanner.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = NotificationPlanner.swift; path = Notifications/NotificationPlanner.swift; sourceTree = "<group>"; };
+		D2B569F84956E83E4D774FB2 /* AppPreferencesModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppPreferencesModel.swift; sourceTree = "<group>"; };
+		D9138E9DE5F4F2C9B5AE8F9E /* GardenScenePreviews.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = GardenScenePreviews.swift; path = Rendering/GardenScenePreviews.swift; sourceTree = "<group>"; };
+		DD8DCD85A490DEACCA5D04E5 /* AppGroup.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AppGroup.swift; path = Storage/AppGroup.swift; sourceTree = "<group>"; };
+		E381B960E83AA1F1658AA1D5 /* GardenViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GardenViewModel.swift; sourceTree = "<group>"; };
+		E7EF28814E610F17B079CCDD /* NotificationModels.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = NotificationModels.swift; path = Notifications/NotificationModels.swift; sourceTree = "<group>"; };
+		E882E2E2F7233014E91613EC /* GardenDeepLink.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = GardenDeepLink.swift; path = Widget/GardenDeepLink.swift; sourceTree = "<group>"; };
+		EBF4EB21F6A50CE6E404BB55 /* GardenState.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = GardenState.swift; path = Models/GardenState.swift; sourceTree = "<group>"; };
+		EC3B64A77BFD387D3073E38F /* GardenTimelinePlanner.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = GardenTimelinePlanner.swift; path = Widget/GardenTimelinePlanner.swift; sourceTree = "<group>"; };
+		EC83B24AB257C163823DF0E8 /* GardenScene.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = GardenScene.swift; path = Rendering/GardenScene.swift; sourceTree = "<group>"; };
+		ED6F701887B565D594F558A3 /* GardenSnapshot.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = GardenSnapshot.swift; path = Models/GardenSnapshot.swift; sourceTree = "<group>"; };
+		EF63B3B203003F852BCEDB45 /* Phase6Tests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Phase6Tests.swift; sourceTree = "<group>"; };
+		F1C603A22546C243F5D43B4D /* GardenCopy.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = GardenCopy.swift; path = Presentation/GardenCopy.swift; sourceTree = "<group>"; };
+		F27446E6D1610AA8745671FB /* WidgetCenterReloader.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WidgetCenterReloader.swift; sourceTree = "<group>"; };
+		FA47C1BA00FF38DA64C6E2D6 /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		C54C6B076653C77FB8D9626E /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3EFA7288BCF543EE0E1C6B14 /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D5B84AA3748BDAFAEA46B78A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				54612E704EEF9ED05729ABE1 /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		EB21811209714E730A2A96C3 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0F148FB71CEA35DC41C860E4 /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		022778531980D5C5C97A2D9A /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				7D4A605B3BFA4CF08422CDA8 /* JournalExport.swift */,
+				8F8600FA50147D218754AE9A /* JournalGrouping.swift */,
+				D01E9C5ACC68DF3488796688 /* Entry.swift */,
+				ED6F701887B565D594F558A3 /* GardenSnapshot.swift */,
+				EBF4EB21F6A50CE6E404BB55 /* GardenState.swift */,
+				A67935F59B5DDA691D53B437 /* GrowthStage.swift */,
+				890F0F6A6AC771BBE3BC68A0 /* Vitality.swift */,
+				E7EF28814E610F17B079CCDD /* NotificationModels.swift */,
+				D1892B351CC2F763901C4784 /* NotificationPlanner.swift */,
+				F1C603A22546C243F5D43B4D /* GardenCopy.swift */,
+				8B1B0CC14C4A38F120BC6620 /* NotificationCopy.swift */,
+				409FD9021F8EEC83CAEB41A8 /* GardenPalette.swift */,
+				EC83B24AB257C163823DF0E8 /* GardenScene.swift */,
+				D9138E9DE5F4F2C9B5AE8F9E /* GardenScenePreviews.swift */,
+				214F1E30E701531F8439B2CB /* GardenSnapshot+Preview.swift */,
+				B579C37DC12DF7507B88053F /* GardenSprites.swift */,
+				3D089BB1937CB353E7479DCE /* GardenStyle.swift */,
+				B026CB2D025036B56A9CB525 /* PixelSprite.swift */,
+				27BF5BD74584B5CD2E8A7015 /* GardenJournal.swift */,
+				1D8B74157D83310A3C6B2029 /* GardenRules.swift */,
+				DD8DCD85A490DEACCA5D04E5 /* AppGroup.swift */,
+				53F86E3E5DA57F6A8159C5D4 /* AppPreferences.swift */,
+				8981D08E9C86787D6B80E901 /* GardenStore.swift */,
+				2DF2128A9EF0B1979C51AC44 /* NotificationSettingsStore.swift */,
+				C35AB6199C643A959C581100 /* SharedContainerLocating.swift */,
+				B913A69DD9DCE2ED6D2946D2 /* WidgetReloading.swift */,
+				E882E2E2F7233014E91613EC /* GardenDeepLink.swift */,
+				EC3B64A77BFD387D3073E38F /* GardenTimelinePlanner.swift */,
+			);
+			name = Shared;
+			path = Shared;
+			sourceTree = "<group>";
+		};
+		2A38E097309A664826407002 /* GratitudeGarden */ = {
+			isa = PBXGroup;
+			children = (
+				D2B569F84956E83E4D774FB2 /* AppPreferencesModel.swift */,
+				6EC74ED5AF49DEBBABCBDD5E /* AppRouter.swift */,
+				43BA87ED3C2A097B7465B1D2 /* ContentView.swift */,
+				531D5274D50CF58A2A198CB4 /* EntryComposerView.swift */,
+				4C5F7E9D5B72AF8BFFDF72E6 /* Haptics.swift */,
+				C919D7F78DB5E388D2B8DF3C /* SoundPlayer.swift */,
+				E381B960E83AA1F1658AA1D5 /* GardenViewModel.swift */,
+				8F43FB0BBEC2F8FC32775310 /* GratitudeGardenApp.swift */,
+				6D00CF237720EA58D24C7B9E /* JournalView.swift */,
+				016589B2E400CA5B5FB224EB /* NotificationSettingsView.swift */,
+				1A8AAB210BC409F52FD4DE05 /* NotificationManager.swift */,
+				27537CFF2FAB8BDFB2FBF94E /* NotificationProtocols.swift */,
+				B56F7C45D4A152015C8B5EF2 /* UserNotificationServices.swift */,
+				824757DBD375C25A3101EC94 /* OnboardingView.swift */,
+				3526662D3C7673959EABC833 /* PrivacyView.swift */,
+				44CA75F5405528E75E9EEEB1 /* SettingsView.swift */,
+				F27446E6D1610AA8745671FB /* WidgetCenterReloader.swift */,
+				B7089EFDE9443A14D715886D /* Assets.xcassets */,
+				FA47C1BA00FF38DA64C6E2D6 /* Info.plist */,
+				92DA898AFC0104D4B79AD7F9 /* GratitudeGarden.entitlements */,
+			);
+			name = GratitudeGarden;
+			path = GratitudeGarden;
+			sourceTree = "<group>";
+		};
+		4FCE5D9EA43F1FE65A3006B4 /* GratitudeGardenTests */ = {
+			isa = PBXGroup;
+			children = (
+				59983B700CDE5D20313542F4 /* GardenJournalTests.swift */,
+				581BA105ACAD48DE39119703 /* GardenRenderingTests.swift */,
+				73D89157219A6307F1EA1BD8 /* GardenRulesTests.swift */,
+				B18701C130231D1FD6E04D25 /* GardenStoreTests.swift */,
+				27426F2253790284B0C18490 /* GardenWidgetTests.swift */,
+				5D6DF657BAF60A1AF1F652D3 /* NotificationTests.swift */,
+				EF63B3B203003F852BCEDB45 /* Phase6Tests.swift */,
+			);
+			name = GratitudeGardenTests;
+			path = GratitudeGardenTests;
+			sourceTree = "<group>";
+		};
+		8459555583CC3B4829A4F467 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				5DD3FB0E392AE158F711AF2C /* GratitudeGarden.app */,
+				BB7BA62A45F1595388C3F0DC /* GratitudeGardenWidgetExtension.appex */,
+				48CCD2655CEC7C848003B6D8 /* GratitudeGardenTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		90932022CE409D7AB132E140 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				F35D0FAA37C602BA10E8AAD2 /* iOS */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		AF61F657F47CD5E25CD75C16 = {
+			isa = PBXGroup;
+			children = (
+				8459555583CC3B4829A4F467 /* Products */,
+				90932022CE409D7AB132E140 /* Frameworks */,
+				022778531980D5C5C97A2D9A /* Shared */,
+				2A38E097309A664826407002 /* GratitudeGarden */,
+				D8A4E3327AFA4874AA938BC1 /* GratitudeGardenWidget */,
+				4FCE5D9EA43F1FE65A3006B4 /* GratitudeGardenTests */,
+			);
+			sourceTree = "<group>";
+		};
+		D8A4E3327AFA4874AA938BC1 /* GratitudeGardenWidget */ = {
+			isa = PBXGroup;
+			children = (
+				5F0F84D239505ECA40F5A56A /* GratitudeGardenWidget.swift */,
+				9401047A797B149743B2EDD6 /* GratitudeGardenWidgetBundle.swift */,
+				4ACD7A5D24DEE483CC4D3E0A /* Info.plist */,
+				84ECBB077372CB213578A402 /* GratitudeGardenWidgetExtension.entitlements */,
+			);
+			name = GratitudeGardenWidget;
+			path = GratitudeGardenWidget;
+			sourceTree = "<group>";
+		};
+		F35D0FAA37C602BA10E8AAD2 /* iOS */ = {
+			isa = PBXGroup;
+			children = (
+				6D0898B03200B7ACD6CD0F37 /* Foundation.framework */,
+			);
+			name = iOS;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		00271A65E862F16197E64BC4 /* GratitudeGardenWidgetExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = FC98A588AF1E74EDF6229B5F /* Build configuration list for PBXNativeTarget "GratitudeGardenWidgetExtension" */;
+			buildPhases = (
+				7695A3589EE57F70FD022E1A /* Sources */,
+				D5B84AA3748BDAFAEA46B78A /* Frameworks */,
+				49B4D1B570138A1DE5AE6DC9 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = GratitudeGardenWidgetExtension;
+			productName = GratitudeGardenWidgetExtension;
+			productReference = BB7BA62A45F1595388C3F0DC /* GratitudeGardenWidgetExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+		8EC53CD6055D3D9865EC97E4 /* GratitudeGardenTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DAEB1F2357B716E550A55040 /* Build configuration list for PBXNativeTarget "GratitudeGardenTests" */;
+			buildPhases = (
+				C8734A25636CF4E4759716F6 /* Sources */,
+				EB21811209714E730A2A96C3 /* Frameworks */,
+				713B87D53DE9B85C5B15B828 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				F382ED36401F2E9EC80B9124 /* PBXTargetDependency */,
+			);
+			name = GratitudeGardenTests;
+			productName = GratitudeGardenTests;
+			productReference = 48CCD2655CEC7C848003B6D8 /* GratitudeGardenTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		E745C74CC99C6C2B358D980A /* GratitudeGarden */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 93A7FFD3A0D2BC07EA004E9C /* Build configuration list for PBXNativeTarget "GratitudeGarden" */;
+			buildPhases = (
+				7435315CA4BEBFFD12BCECA0 /* Sources */,
+				C54C6B076653C77FB8D9626E /* Frameworks */,
+				F9FC571F10C5FF8E3858C051 /* Resources */,
+				D7F8F0FDCFA120846BCD0564 /* Embed Foundation Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				B631EDD9F33B8F7984D0CB1C /* PBXTargetDependency */,
+			);
+			name = GratitudeGarden;
+			productName = GratitudeGarden;
+			productReference = 5DD3FB0E392AE158F711AF2C /* GratitudeGarden.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		44E269C8981C46012C18BB4A /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastSwiftUpdateCheck = 1600;
+				LastUpgradeCheck = 1600;
+			};
+			buildConfigurationList = F0DA5D168B358E49338BDF99 /* Build configuration list for PBXProject "GratitudeGarden" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = AF61F657F47CD5E25CD75C16;
+			minimizedProjectReferenceProxies = 0;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 8459555583CC3B4829A4F467 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				E745C74CC99C6C2B358D980A /* GratitudeGarden */,
+				00271A65E862F16197E64BC4 /* GratitudeGardenWidgetExtension */,
+				8EC53CD6055D3D9865EC97E4 /* GratitudeGardenTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		49B4D1B570138A1DE5AE6DC9 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		713B87D53DE9B85C5B15B828 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F9FC571F10C5FF8E3858C051 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8E8071D9635CDECB1516D30E /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		7435315CA4BEBFFD12BCECA0 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				62177B82638127E9679CCA0E /* JournalExport.swift in Sources */,
+				2A63D382D9D172967290D806 /* JournalGrouping.swift in Sources */,
+				A89AA95554589E6200D5A0D6 /* Entry.swift in Sources */,
+				B64EE92801428EFEC62BB11A /* GardenSnapshot.swift in Sources */,
+				81FC78741D00CFBA343FAB0C /* GardenState.swift in Sources */,
+				532AC6DB61731AE49650A471 /* GrowthStage.swift in Sources */,
+				17031E23B7B0C9F633E0A83C /* Vitality.swift in Sources */,
+				A6EBC0B97A3083468471386B /* NotificationModels.swift in Sources */,
+				3F1E2DD7AB0DA4C652FDC09E /* NotificationPlanner.swift in Sources */,
+				2769C95A2A1CD546F2657021 /* GardenCopy.swift in Sources */,
+				BF889D3B060686352C539B7D /* NotificationCopy.swift in Sources */,
+				BFF459461F7A27172FCFF843 /* GardenPalette.swift in Sources */,
+				26D71C44DF4DB8219D682361 /* GardenScene.swift in Sources */,
+				F057AA5000548C69F42C0C0B /* GardenScenePreviews.swift in Sources */,
+				CAC28BA01F480B8EF240BA1B /* GardenSnapshot+Preview.swift in Sources */,
+				377F7366776357AE2038FB83 /* GardenSprites.swift in Sources */,
+				309DF1E8D85D54F31D162D8C /* GardenStyle.swift in Sources */,
+				D7B12F9CDC319E91C193D8F9 /* PixelSprite.swift in Sources */,
+				932688B0ECEB74E41A8281C5 /* GardenJournal.swift in Sources */,
+				C6D950557F88A6B7A2952504 /* GardenRules.swift in Sources */,
+				87073EE527AB2160DC7AD3F8 /* AppGroup.swift in Sources */,
+				FFF8F33C648BD350881FB8EC /* AppPreferences.swift in Sources */,
+				560D619E12DEA393E6F5AEE7 /* GardenStore.swift in Sources */,
+				FBAA71A781B15FBA063F7C5E /* NotificationSettingsStore.swift in Sources */,
+				A276FADCE1536374DC5CC971 /* SharedContainerLocating.swift in Sources */,
+				4E2A578A6E26C8DE283238B6 /* WidgetReloading.swift in Sources */,
+				3A40ED0E0F56FA2D6942AC89 /* GardenDeepLink.swift in Sources */,
+				68F9770AD488C02871A7D271 /* GardenTimelinePlanner.swift in Sources */,
+				A76AFC2356701467ED25D5F3 /* AppPreferencesModel.swift in Sources */,
+				5BDB68FEC5C023E68EE5CF87 /* AppRouter.swift in Sources */,
+				0BBFB9419F2144162F1C6319 /* ContentView.swift in Sources */,
+				39DCBA3DEE20FDD6EBE886F2 /* EntryComposerView.swift in Sources */,
+				C55964C6E97C24F5CFB173F1 /* Haptics.swift in Sources */,
+				A2180FF465F49C78E0928458 /* SoundPlayer.swift in Sources */,
+				FBBF5B9404E865BBFADCE281 /* GardenViewModel.swift in Sources */,
+				A96C6AA7BBD2685A26BD13FB /* GratitudeGardenApp.swift in Sources */,
+				C8696A6F7378EE4D2E1129E9 /* JournalView.swift in Sources */,
+				B486CBFA118A552FDB9F83E2 /* NotificationSettingsView.swift in Sources */,
+				8AA908D0E68EF4D2F0BDFD19 /* NotificationManager.swift in Sources */,
+				F6414BAFA6701E401D2925EB /* NotificationProtocols.swift in Sources */,
+				3C9F11A2861365A375093F37 /* UserNotificationServices.swift in Sources */,
+				50C107E869CB12C8C4FC4317 /* OnboardingView.swift in Sources */,
+				DFBAC15543C09817797C2D44 /* PrivacyView.swift in Sources */,
+				91BE6EC15E89D1C4B2DA978E /* SettingsView.swift in Sources */,
+				9091301543BC67525FAE506E /* WidgetCenterReloader.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		7695A3589EE57F70FD022E1A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				962C3C86C4B7FD454A639F37 /* JournalExport.swift in Sources */,
+				BEFAB4C90EB6EEBD92D184C0 /* JournalGrouping.swift in Sources */,
+				4A85E099B948EB789B1AD313 /* Entry.swift in Sources */,
+				DB139D7DB9C9CD3824309E09 /* GardenSnapshot.swift in Sources */,
+				E48D78CC8E007AAB27CDED20 /* GardenState.swift in Sources */,
+				31CE02A9F916F159034A79E9 /* GrowthStage.swift in Sources */,
+				ABC92DF909BFD2E0F605C071 /* Vitality.swift in Sources */,
+				B18C5819DF0C684BA1B1461A /* NotificationModels.swift in Sources */,
+				880953B24329A30838360109 /* NotificationPlanner.swift in Sources */,
+				9FC63B695EA37669707D2655 /* GardenCopy.swift in Sources */,
+				427AF9B50C5DCE8922E295E9 /* NotificationCopy.swift in Sources */,
+				24BA86F512C7C5E544115C9D /* GardenPalette.swift in Sources */,
+				FBAF7A9F0B60DB77E330D8C0 /* GardenScene.swift in Sources */,
+				CC3A937F1BE56E19297523C9 /* GardenScenePreviews.swift in Sources */,
+				2F05FA76649EA28C2D4107FF /* GardenSnapshot+Preview.swift in Sources */,
+				68543E76C975DC3702049903 /* GardenSprites.swift in Sources */,
+				91E84FDEFFE92A51243EF226 /* GardenStyle.swift in Sources */,
+				46A9A3523E671DE645992455 /* PixelSprite.swift in Sources */,
+				10E5EEEC942DE33251902DFD /* GardenJournal.swift in Sources */,
+				7D35150E67781FE3DC665577 /* GardenRules.swift in Sources */,
+				30B82964924C50EF951C7BD0 /* AppGroup.swift in Sources */,
+				5C59B7A4C62FF5F15922A725 /* AppPreferences.swift in Sources */,
+				392CD9A4915BCF9087D4F0F2 /* GardenStore.swift in Sources */,
+				ECA08EE7F65B633D91CAAD93 /* NotificationSettingsStore.swift in Sources */,
+				4D2DBA210C04C10180AE213C /* SharedContainerLocating.swift in Sources */,
+				70F80F46C51B821D79671CF1 /* WidgetReloading.swift in Sources */,
+				34399CB527287CF99822D8C9 /* GardenDeepLink.swift in Sources */,
+				04D42CB2AD12A9FAE44C9570 /* GardenTimelinePlanner.swift in Sources */,
+				09CCDB17F1CCBE96A233706B /* GratitudeGardenWidget.swift in Sources */,
+				B66F0606213349319ABDD936 /* GratitudeGardenWidgetBundle.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C8734A25636CF4E4759716F6 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CEEB51E27376242ADBF6AFD3 /* GardenJournalTests.swift in Sources */,
+				DEE0710FF1373AC1A7501D06 /* GardenRenderingTests.swift in Sources */,
+				B990C4EA0ED84F3FB5BCE017 /* GardenRulesTests.swift in Sources */,
+				B2BDC8B3BA66F790C807CB24 /* GardenStoreTests.swift in Sources */,
+				DD170E4D87877A6904CAD3AC /* GardenWidgetTests.swift in Sources */,
+				6F19495AD7F1BB4745803BEA /* NotificationTests.swift in Sources */,
+				A8859614097410306EF338FD /* Phase6Tests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		B631EDD9F33B8F7984D0CB1C /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = GratitudeGardenWidgetExtension;
+			target = 00271A65E862F16197E64BC4 /* GratitudeGardenWidgetExtension */;
+			targetProxy = 190333EEFE93324840DCCB54 /* PBXContainerItemProxy */;
+		};
+		F382ED36401F2E9EC80B9124 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = GratitudeGarden;
+			target = E745C74CC99C6C2B358D980A /* GratitudeGarden */;
+			targetProxy = B55C577F0CA2C77808FE7050 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		463F475ADBCE1BA71956434A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGNING_ALLOWED = NO;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = ai.sofsuite.gratitudegarden.tests;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/GratitudeGarden.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/GratitudeGarden";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		4C7A0669AAEBFC02738CFBA3 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGNING_ALLOWED = NO;
+				CODE_SIGN_ENTITLEMENTS = GratitudeGardenWidget/GratitudeGardenWidgetExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = GratitudeGardenWidget/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = ai.sofsuite.gratitudegarden.widget;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		72336D36707909955567AD26 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGNING_ALLOWED = NO;
+				CODE_SIGN_ENTITLEMENTS = GratitudeGardenWidget/GratitudeGardenWidgetExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = GratitudeGardenWidget/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = ai.sofsuite.gratitudegarden.widget;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		7AD27293ECF2F7C90B3B3CD5 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		9620EFDE945675AEE193AD22 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGNING_ALLOWED = NO;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = ai.sofsuite.gratitudegarden.tests;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/GratitudeGarden.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/GratitudeGarden";
+			};
+			name = Debug;
+		};
+		C3AA98BE5F0EE460C3B97BDF /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGNING_ALLOWED = NO;
+				CODE_SIGN_ENTITLEMENTS = GratitudeGarden/GratitudeGarden.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_PREVIEWS = YES;
+				ENABLE_TESTABILITY = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = GratitudeGarden/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = ai.sofsuite.gratitudegarden;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		EF24F22CF854999888E951C0 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGNING_ALLOWED = NO;
+				CODE_SIGN_ENTITLEMENTS = GratitudeGarden/GratitudeGarden.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_PREVIEWS = YES;
+				ENABLE_TESTABILITY = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = GratitudeGarden/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = ai.sofsuite.gratitudegarden;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		F2392E77D26DB78F2EDDFBDB /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		93A7FFD3A0D2BC07EA004E9C /* Build configuration list for PBXNativeTarget "GratitudeGarden" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				EF24F22CF854999888E951C0 /* Release */,
+				C3AA98BE5F0EE460C3B97BDF /* Debug */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		DAEB1F2357B716E550A55040 /* Build configuration list for PBXNativeTarget "GratitudeGardenTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				463F475ADBCE1BA71956434A /* Release */,
+				9620EFDE945675AEE193AD22 /* Debug */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F0DA5D168B358E49338BDF99 /* Build configuration list for PBXProject "GratitudeGarden" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F2392E77D26DB78F2EDDFBDB /* Debug */,
+				7AD27293ECF2F7C90B3B3CD5 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		FC98A588AF1E74EDF6229B5F /* Build configuration list for PBXNativeTarget "GratitudeGardenWidgetExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				72336D36707909955567AD26 /* Release */,
+				4C7A0669AAEBFC02738CFBA3 /* Debug */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 44E269C8981C46012C18BB4A /* Project object */;
+}
