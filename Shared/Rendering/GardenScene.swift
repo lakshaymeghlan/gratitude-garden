@@ -55,8 +55,13 @@ struct GardenSceneView: View {
         .onChange(of: snapshot.isReviving) { _, reviving in
             revivalStart = reviving ? Date() : nil
         }
+        // The pixel art is decorative; VoiceOver hears the full state instead.
         .accessibilityElement()
-        .accessibilityLabel(Text(GardenCopy.vitalityTitle(snapshot.vitality, isReviving: snapshot.isReviving)))
+        .accessibilityLabel(Text(GardenCopy.accessibilityDescription(
+            growth: snapshot.growthStage,
+            vitality: snapshot.vitality,
+            isReviving: snapshot.isReviving,
+            lastEntry: snapshot.lastEntryDate)))
     }
 
     // MARK: Revival timing

@@ -133,6 +133,19 @@ enum GardenRules {
         )
     }
 
+    // MARK: - Recovery
+
+    /// Rebuilds `GardenState` purely by replaying the journal. The forgiving recovery path: if the
+    /// stored state is ever lost or corrupted, the entries alone reconstruct growth — so **progress
+    /// is never lost** to a technical problem (corrupt file, interrupted write, etc.).
+    static func rebuild(fromEntries entries: [Entry], calendar: Calendar = .current) -> GardenState {
+        entries
+            .sorted { $0.date < $1.date }
+            .reduce(GardenState.empty) { state, entry in
+                applyingEntry(on: entry.date, to: state, calendar: calendar).state
+            }
+    }
+
     // MARK: - Helpers
 
     /// Full calendar days elapsed after the last entry's day, excluding the still-open current

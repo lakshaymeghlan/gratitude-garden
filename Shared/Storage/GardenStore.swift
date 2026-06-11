@@ -55,7 +55,7 @@ final class FileGardenStore: GardenStore {
     // MARK: Garden
 
     func loadGarden() -> GardenState {
-        (try? read(GardenState.self, from: gardenFilename)) ?? .empty
+        readValue(GardenState.self, from: gardenFilename) ?? .empty
     }
 
     func save(_ garden: GardenState) throws {
@@ -65,7 +65,7 @@ final class FileGardenStore: GardenStore {
     // MARK: Entries (journal)
 
     func loadEntries() -> [Entry] {
-        (try? read([Entry].self, from: entriesFilename)) ?? []
+        readValue([Entry].self, from: entriesFilename) ?? []
     }
 
     func save(_ entries: [Entry]) throws {
@@ -82,9 +82,24 @@ final class FileGardenStore: GardenStore {
         try locator.containerURL().appendingPathComponent(name, isDirectory: false)
     }
 
-    private func read<T: Decodable>(_ type: T.Type, from name: String) throws -> T {
-        let data = try Data(contentsOf: try fileURL(name))
-        return try decoder.decode(T.self, from: data)
+    /// Reads a value, tolerating a **missing** file (returns nil → caller uses a safe default) and
+    /// **quarantining a corrupt** one (moves it aside so we never get stuck failing on the same bad
+    /// bytes, and the data is preserved for possible manual recovery). Higher layers can then rebuild
+    /// from the journal, so a corrupt file never costs the user their progress.
+    private func readValue<T: Decodable>(_ type: T.Type, from name: String) -> T? {
+        guard let url = try? fileURL(name), let data = try? Data(contentsOf: url) else { return nil }
+        do {
+            return try decoder.decode(T.self, from: data)
+        } catch {
+            quarantineCorruptFile(at: url)
+            return nil
+        }
+    }
+
+    private func quarantineCorruptFile(at url: URL) {
+        let quarantined = url.appendingPathExtension("corrupt")
+        try? FileManager.default.removeItem(at: quarantined)
+        try? FileManager.default.moveItem(at: url, to: quarantined)
     }
 
     private func write<T: Encodable>(_ value: T, to name: String) throws {

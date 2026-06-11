@@ -52,6 +52,24 @@ enum GardenCopy {
         }
     }
 
+    /// A full spoken description of the garden for VoiceOver — the pixel art is decorative, so this
+    /// is how non-visual users perceive the garden's state.
+    static func accessibilityDescription(growth: GrowthStage,
+                                         vitality: Vitality,
+                                         isReviving: Bool,
+                                         lastEntry: Date?) -> String {
+        var parts: [String] = []
+        parts.append(isReviving ? "Welcome back. Your garden is coming back to life."
+                                : vitalityTitle(vitality, isReviving: false) + ".")
+        parts.append("Growth stage: \(growthTitle(growth).lowercased()).")
+        if let lastEntry {
+            parts.append("Last tended \(lastEntry.formatted(date: .abbreviated, time: .omitted)).")
+        } else {
+            parts.append("Not tended yet.")
+        }
+        return parts.joined(separator: " ")
+    }
+
     // MARK: Entry kinds — prompts & labels
 
     /// The supportive prompt shown while composing each kind of entry.

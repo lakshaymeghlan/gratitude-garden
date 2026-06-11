@@ -27,6 +27,28 @@ final class GardenJournal {
 
     func currentGarden() -> GardenState { store.loadGarden() }
 
+    /// Heals lost or corrupt garden state by replaying the journal. Safe to call at every launch:
+    /// if the stored state was reset (e.g. its file was corrupt and got quarantined) but entries
+    /// survived, this rebuilds growth from them and re-persists. Returns whether a repair happened.
+    @discardableResult
+    func repair() -> Bool {
+        let entries = store.loadEntries()
+        guard !entries.isEmpty else { return false }
+        let stored = store.loadGarden()
+        let rebuilt = GardenRules.rebuild(fromEntries: entries, calendar: calendar)
+        // Only overwrite when the journal implies more progress than the stored state has — i.e. the
+        // stored state was genuinely lost. Never regress a healthy state.
+        guard rebuilt.totalEntries > stored.totalEntries else { return false }
+        try? store.save(rebuilt)
+        return true
+    }
+
+    /// Clears the garden and journal entirely (used by Settings → Reset, behind a confirmation).
+    func reset() throws {
+        try store.save(GardenState.empty)
+        try store.save([Entry]())
+    }
+
     /// Newest-first, for the journal/history view.
     func allEntries() -> [Entry] {
         store.loadEntries().sorted { $0.date > $1.date }
