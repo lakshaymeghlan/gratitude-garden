@@ -1,12 +1,18 @@
 import Foundation
 import Observation
 
+/// What a successful save produced — used by the view layer to decide which (optional) haptic/sound
+/// to play. Kept UIKit-free so the view model never imports feedback frameworks.
+struct EntrySaveOutcome: Equatable {
+    let didRevive: Bool
+    let reachedFirstBloom: Bool
+}
+
 /// Drives the garden home screen and the entry composer.
 ///
-/// Holds its collaborators via dependency injection (`GardenJournal`, `WidgetReloading`, and a
-/// `now` clock) so it runs on real shared storage in the app and on fakes in tests. It owns no
-/// garden *logic* — all of that lives in the pure rules engine via the journal. Its job is to read
-/// the current snapshot, route saves through the journal, and nudge the widget afterwards.
+/// Holds its collaborators via dependency injection (`GardenJournal`, `WidgetReloading`, a `now`
+/// clock) so it runs on real shared storage in the app and on fakes in tests. It owns no garden
+/// *logic* — that lives in the pure rules engine via the journal.
 @MainActor
 @Observable
 final class GardenViewModel {
@@ -14,11 +20,8 @@ final class GardenViewModel {
     private let widgetReloader: WidgetReloading
     private let now: () -> Date
 
-    /// The single render descriptor for the current garden state.
     private(set) var snapshot: GardenSnapshot
-    /// Journal entries, newest first.
     private(set) var entries: [Entry]
-    /// Drives the transient welcome-back banner shown right after a reviving save.
     var showWelcomeBack: Bool = false
 
     init(journal: GardenJournal = GardenJournal(store: FileGardenStore()),
@@ -31,33 +34,46 @@ final class GardenViewModel {
         self.entries = journal.allEntries()
     }
 
-    /// Container path, or `nil` if the App Group is unreachable — surfaced as a diagnostic.
     var sharedStoragePath: String? { journal.sharedStoragePath() }
 
-    /// Re-reads shared storage (e.g. on foreground / first appear). Also reflects a persisted
-    /// revival so the welcome-back message survives a relaunch on the day of return.
+    /// Call at launch / first appear: heal any lost state from the journal, then load. This is the
+    /// forgiving recovery in action — a corrupt or reset state file is rebuilt from entries.
+    func onAppear() {
+        if journal.repair() { widgetReloader.reloadGardenWidget() }
+        refresh()
+    }
+
     func refresh() {
         snapshot = journal.snapshot(now: now())
         entries = journal.allEntries()
         showWelcomeBack = snapshot.isReviving
     }
 
-    /// Logs an entry through the rules engine, persists it, refreshes state, and reloads the widget.
-    /// Returns whether the save succeeded (the composer dismisses on success).
+    /// Logs an entry through the rules engine, persists, refreshes, and reloads the widget. Returns
+    /// the outcome (nil if the text was empty / save failed) so the caller can play feedback.
     @discardableResult
-    func save(text: String, kind: EntryKind) -> Bool {
-        guard !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return false }
+    func save(text: String, kind: EntryKind) -> EntrySaveOutcome? {
+        guard !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return nil }
+        let growthBefore = snapshot.growthStage
         do {
             let result = try journal.log(text: text, kind: kind, on: now())
             widgetReloader.reloadGardenWidget()
             snapshot = journal.snapshot(now: now())
             entries = journal.allEntries()
             showWelcomeBack = result.didRevive
-            return true
+            let reachedFirstBloom = growthBefore < .blooming && result.garden.growthStage >= .blooming
+            return EntrySaveOutcome(didRevive: result.didRevive, reachedFirstBloom: reachedFirstBloom)
         } catch {
-            // POC-level handling; richer error UI can come in Phase 6.
             print("Save failed: \(error.localizedDescription)")
-            return false
+            return nil
         }
+    }
+
+    /// Clears the garden and journal (Settings → Reset, behind a confirmation).
+    func resetGarden() {
+        try? journal.reset()
+        showWelcomeBack = false
+        widgetReloader.reloadGardenWidget()
+        refresh()
     }
 }
