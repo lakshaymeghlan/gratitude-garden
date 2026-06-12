@@ -2,7 +2,7 @@ import SwiftUI
 
 /// Garden home screen. The pixel-art `GardenSceneView` is the hero; everything else is warm text.
 struct ContentView: View {
-    @State private var viewModel: GardenViewModel
+    @State private var viewModel = GardenViewModel()
     @State private var showingJournal = false
     @State private var showingSettings = false
 
@@ -13,10 +13,6 @@ struct ContentView: View {
 
     private let haptics: HapticsPlaying = SystemHaptics()
     private let sound: SoundPlaying = SystemSoundPlayer()
-
-    init(viewModel: GardenViewModel = GardenViewModel()) {
-        _viewModel = State(initialValue: viewModel)
-    }
 
     private var snapshot: GardenSnapshot { viewModel.snapshot }
 
@@ -60,8 +56,14 @@ struct ContentView: View {
                 .padding()
             }
             .sheet(isPresented: $router.isComposing) {
-                EntryComposerView { text, kind in
-                    if let outcome = viewModel.save(text: text, kind: kind) {
+                EntryComposerView { drafts in
+                    var lastOutcome: EntrySaveOutcome?
+                    for draft in drafts {
+                        if let outcome = viewModel.save(text: draft.text, kind: draft.kind) {
+                            lastOutcome = outcome
+                        }
+                    }
+                    if let outcome = lastOutcome {
                         router.isComposing = false
                         playFeedback(for: outcome)
                         Task { await notifications.refreshSchedule() }

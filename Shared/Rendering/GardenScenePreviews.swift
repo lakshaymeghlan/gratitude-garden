@@ -19,21 +19,23 @@ private struct GardenTile: View {
     }
 }
 
-/// The full gallery — every state at a glance.
+/// The full gallery — the world growing, plus each vitality state.
 struct GardenGalleryView: View {
-    private let columns = [GridItem(.adaptive(minimum: 130), spacing: 12)]
+    private let columns = [GridItem(.adaptive(minimum: 150), spacing: 12)]
+
+    // Representative entry counts for each world stage 0...6.
+    private let stageEntries = [1, 5, 12, 24, 45, 80, 140]
 
     var body: some View {
         ScrollView {
             LazyVGrid(columns: columns, spacing: 16) {
-                GardenTile(title: "Thriving · Bloom", snapshot: .preview(growth: .blooming))
-                GardenTile(title: "Thriving · Flourishing", snapshot: .preview(growth: .flourishing))
-                GardenTile(title: "Thriving · Sprout", snapshot: .preview(growth: .sprout, totalEntries: 1))
-                GardenTile(title: "Drooping · 1", snapshot: .preview(vitality: .drooping, wiltLevel: 1))
-                GardenTile(title: "Drooping · 2", snapshot: .preview(vitality: .drooping, wiltLevel: 2))
-                GardenTile(title: "Drooping · 3", snapshot: .preview(vitality: .drooping, wiltLevel: 3))
-                GardenTile(title: "Dormant", snapshot: .preview(vitality: .dormant, wiltLevel: 4))
-                GardenTile(title: "Reviving", snapshot: .preview(isReviving: true))
+                ForEach(Array(stageEntries.enumerated()), id: \.offset) { index, entries in
+                    GardenTile(title: "Stage \(index) · \(entries) entries",
+                               snapshot: .preview(totalEntries: entries))
+                }
+                GardenTile(title: "Drooping", snapshot: .preview(vitality: .drooping, wiltLevel: 2, totalEntries: 80))
+                GardenTile(title: "Dormant", snapshot: .preview(vitality: .dormant, wiltLevel: 4, totalEntries: 80))
+                GardenTile(title: "Reviving", snapshot: .preview(isReviving: true, totalEntries: 80))
             }
             .padding()
         }
@@ -42,36 +44,31 @@ struct GardenGalleryView: View {
 
 // MARK: - Previews (Xcode canvas)
 
-#Preview("Garden Gallery") {
+#Preview("World Gallery") {
     GardenGalleryView()
 }
 
-#Preview("Thriving") {
-    GardenSceneView(snapshot: .preview(growth: .flourishing))
+#Preview("Stage 0 · bare meadow") {
+    GardenSceneView(snapshot: .preview(totalEntries: 1))
         .aspectRatio(0.9, contentMode: .fit).padding()
 }
 
-#Preview("Drooping (level 2)") {
-    GardenSceneView(snapshot: .preview(vitality: .drooping, wiltLevel: 2))
+#Preview("Stage 6 · magical") {
+    GardenSceneView(snapshot: .preview(totalEntries: 140))
         .aspectRatio(0.9, contentMode: .fit).padding()
 }
 
-#Preview("Dormant") {
-    GardenSceneView(snapshot: .preview(vitality: .dormant, wiltLevel: 4))
+#Preview("Drooping") {
+    GardenSceneView(snapshot: .preview(vitality: .drooping, wiltLevel: 2, totalEntries: 80))
+        .aspectRatio(0.9, contentMode: .fit).padding()
+}
+
+#Preview("Dormant (still beautiful)") {
+    GardenSceneView(snapshot: .preview(vitality: .dormant, wiltLevel: 4, totalEntries: 80))
         .aspectRatio(0.9, contentMode: .fit).padding()
 }
 
 #Preview("Reviving (welcome back)") {
-    GardenSceneView(snapshot: .preview(isReviving: true))
+    GardenSceneView(snapshot: .preview(isReviving: true, totalEntries: 80))
         .aspectRatio(0.9, contentMode: .fit).padding()
-}
-
-#Preview("Growth stages") {
-    HStack(spacing: 8) {
-        ForEach(GrowthStage.allCases, id: \.rawValue) { stage in
-            GardenSceneView(snapshot: .preview(growth: stage), animated: false)
-                .aspectRatio(0.7, contentMode: .fit)
-        }
-    }
-    .padding()
 }
