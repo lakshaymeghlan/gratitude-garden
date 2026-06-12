@@ -158,9 +158,9 @@ final class GardenViewModelTests: XCTestCase {
 
         XCTAssertEqual(vm.snapshot.totalEntries, 0)
 
-        let ok = vm.save(text: "the rain", kind: .gratitude)
+        let outcome = vm.save(text: "the rain", kind: .gratitude)
 
-        XCTAssertTrue(ok)
+        XCTAssertNotNil(outcome, "A successful save returns an outcome")
         XCTAssertEqual(vm.snapshot.totalEntries, 1, "Snapshot should reflect the new entry")
         XCTAssertEqual(vm.entries.count, 1)
         XCTAssertEqual(spy.reloadCount, 1, "A successful save must reload the widget exactly once")
@@ -174,7 +174,7 @@ final class GardenViewModelTests: XCTestCase {
         let vm = GardenViewModel(journal: GardenJournal(store: FileGardenStore(locator: FixedURLLocator(url: dir))),
                                  widgetReloader: WidgetReloadingSpy(),
                                  now: { Date() })
-        XCTAssertFalse(vm.save(text: "   ", kind: .gratitude))
+        XCTAssertNil(vm.save(text: "   ", kind: .gratitude))
         XCTAssertEqual(vm.entries.count, 0)
     }
 }

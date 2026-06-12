@@ -61,6 +61,34 @@ final class GardenRenderingTests: XCTestCase {
         XCTAssertEqual(GardenStyle.lerp(pre, target, 1.0), target, "Ends exactly at the thriving target")
     }
 
+    // MARK: World progression (cumulative, never shrinks)
+
+    func testWorldStageThresholds() {
+        XCTAssertEqual(WorldStage.stage(forTotalEntries: 0), .bareMeadow)
+        XCTAssertEqual(WorldStage.stage(forTotalEntries: 2), .bareMeadow)
+        XCTAssertEqual(WorldStage.stage(forTotalEntries: 3), .sprouting)
+        XCTAssertEqual(WorldStage.stage(forTotalEntries: 8), .patches)
+        XCTAssertEqual(WorldStage.stage(forTotalEntries: 16), .spreading)
+        XCTAssertEqual(WorldStage.stage(forTotalEntries: 31), .alive)
+        XCTAssertEqual(WorldStage.stage(forTotalEntries: 61), .lush)
+        XCTAssertEqual(WorldStage.stage(forTotalEntries: 100), .lush)
+        XCTAssertEqual(WorldStage.stage(forTotalEntries: 101), .magical)
+        XCTAssertEqual(WorldStage.stage(forTotalEntries: 5000), .magical)
+    }
+
+    func testWorldStageNeverDecreasesWithMoreEntries() {
+        var previous = WorldStage.bareMeadow
+        for total in 0...200 {
+            let stage = WorldStage.stage(forTotalEntries: total)
+            XCTAssertGreaterThanOrEqual(stage, previous, "World must never shrink as entries grow")
+            previous = stage
+        }
+    }
+
+    func testSnapshotExposesWorldStage() {
+        XCTAssertEqual(GardenSnapshot.preview(totalEntries: 45).worldStage, .alive)
+    }
+
     // MARK: Sprite integrity
 
     func testEveryGrowthStageHasAtLeastOneFrameWithContent() {

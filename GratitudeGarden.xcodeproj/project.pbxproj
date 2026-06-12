@@ -32,6 +32,7 @@
 		427AF9B50C5DCE8922E295E9 /* NotificationCopy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B1B0CC14C4A38F120BC6620 /* NotificationCopy.swift */; };
 		46A9A3523E671DE645992455 /* PixelSprite.swift in Sources */ = {isa = PBXBuildFile; fileRef = B026CB2D025036B56A9CB525 /* PixelSprite.swift */; };
 		4A85E099B948EB789B1AD313 /* Entry.swift in Sources */ = {isa = PBXBuildFile; fileRef = D01E9C5ACC68DF3488796688 /* Entry.swift */; };
+		4D04C10196C0F9BFE978F83A /* GardenWorldArt.swift in Sources */ = {isa = PBXBuildFile; fileRef = D046E75BDE86B48A02AF5D31 /* GardenWorldArt.swift */; };
 		4D2DBA210C04C10180AE213C /* SharedContainerLocating.swift in Sources */ = {isa = PBXBuildFile; fileRef = C35AB6199C643A959C581100 /* SharedContainerLocating.swift */; };
 		4E2A578A6E26C8DE283238B6 /* WidgetReloading.swift in Sources */ = {isa = PBXBuildFile; fileRef = B913A69DD9DCE2ED6D2946D2 /* WidgetReloading.swift */; };
 		50C107E869CB12C8C4FC4317 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 824757DBD375C25A3101EC94 /* OnboardingView.swift */; };
@@ -50,17 +51,20 @@
 		87073EE527AB2160DC7AD3F8 /* AppGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD8DCD85A490DEACCA5D04E5 /* AppGroup.swift */; };
 		880953B24329A30838360109 /* NotificationPlanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1892B351CC2F763901C4784 /* NotificationPlanner.swift */; };
 		8AA908D0E68EF4D2F0BDFD19 /* NotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A8AAB210BC409F52FD4DE05 /* NotificationManager.swift */; };
+		8DD418C393ED636EA7E51EF4 /* WorldArt.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1D5E319EA9D69FA04C368DE4 /* WorldArt.xcassets */; };
 		8E8071D9635CDECB1516D30E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B7089EFDE9443A14D715886D /* Assets.xcassets */; };
 		9091301543BC67525FAE506E /* WidgetCenterReloader.swift in Sources */ = {isa = PBXBuildFile; fileRef = F27446E6D1610AA8745671FB /* WidgetCenterReloader.swift */; };
 		91BE6EC15E89D1C4B2DA978E /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44CA75F5405528E75E9EEEB1 /* SettingsView.swift */; };
 		91E84FDEFFE92A51243EF226 /* GardenStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D089BB1937CB353E7479DCE /* GardenStyle.swift */; };
 		932688B0ECEB74E41A8281C5 /* GardenJournal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27BF5BD74584B5CD2E8A7015 /* GardenJournal.swift */; };
+		942C651A2F28D0A7440FF8D2 /* WorldStage.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2A3091D6841B81BA4C66D4 /* WorldStage.swift */; };
 		962C3C86C4B7FD454A639F37 /* JournalExport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D4A605B3BFA4CF08422CDA8 /* JournalExport.swift */; };
 		9FC63B695EA37669707D2655 /* GardenCopy.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1C603A22546C243F5D43B4D /* GardenCopy.swift */; };
 		A2180FF465F49C78E0928458 /* SoundPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = C919D7F78DB5E388D2B8DF3C /* SoundPlayer.swift */; };
 		A276FADCE1536374DC5CC971 /* SharedContainerLocating.swift in Sources */ = {isa = PBXBuildFile; fileRef = C35AB6199C643A959C581100 /* SharedContainerLocating.swift */; };
 		A6EBC0B97A3083468471386B /* NotificationModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7EF28814E610F17B079CCDD /* NotificationModels.swift */; };
 		A76AFC2356701467ED25D5F3 /* AppPreferencesModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2B569F84956E83E4D774FB2 /* AppPreferencesModel.swift */; };
+		A79D7F447B76BD989B2242AD /* WorldStage.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2A3091D6841B81BA4C66D4 /* WorldStage.swift */; };
 		A8859614097410306EF338FD /* Phase6Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF63B3B203003F852BCEDB45 /* Phase6Tests.swift */; };
 		A89AA95554589E6200D5A0D6 /* Entry.swift in Sources */ = {isa = PBXBuildFile; fileRef = D01E9C5ACC68DF3488796688 /* Entry.swift */; };
 		A96C6AA7BBD2685A26BD13FB /* GratitudeGardenApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F43FB0BBEC2F8FC32775310 /* GratitudeGardenApp.swift */; };
@@ -72,6 +76,7 @@
 		B64EE92801428EFEC62BB11A /* GardenSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED6F701887B565D594F558A3 /* GardenSnapshot.swift */; };
 		B66F0606213349319ABDD936 /* GratitudeGardenWidgetBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9401047A797B149743B2EDD6 /* GratitudeGardenWidgetBundle.swift */; };
 		B990C4EA0ED84F3FB5BCE017 /* GardenRulesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73D89157219A6307F1EA1BD8 /* GardenRulesTests.swift */; };
+		B9F4A4BD18A45A7833A4C446 /* WorldArt.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1D5E319EA9D69FA04C368DE4 /* WorldArt.xcassets */; };
 		BEFAB4C90EB6EEBD92D184C0 /* JournalGrouping.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F8600FA50147D218754AE9A /* JournalGrouping.swift */; };
 		BF889D3B060686352C539B7D /* NotificationCopy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B1B0CC14C4A38F120BC6620 /* NotificationCopy.swift */; };
 		BFF459461F7A27172FCFF843 /* GardenPalette.swift in Sources */ = {isa = PBXBuildFile; fileRef = 409FD9021F8EEC83CAEB41A8 /* GardenPalette.swift */; };
@@ -87,6 +92,7 @@
 		DEE0710FF1373AC1A7501D06 /* GardenRenderingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 581BA105ACAD48DE39119703 /* GardenRenderingTests.swift */; };
 		DFBAC15543C09817797C2D44 /* PrivacyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3526662D3C7673959EABC833 /* PrivacyView.swift */; };
 		E48D78CC8E007AAB27CDED20 /* GardenState.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBF4EB21F6A50CE6E404BB55 /* GardenState.swift */; };
+		EC04913E49329B1C14DF7267 /* GardenWorldArt.swift in Sources */ = {isa = PBXBuildFile; fileRef = D046E75BDE86B48A02AF5D31 /* GardenWorldArt.swift */; };
 		ECA08EE7F65B633D91CAAD93 /* NotificationSettingsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DF2128A9EF0B1979C51AC44 /* NotificationSettingsStore.swift */; };
 		F057AA5000548C69F42C0C0B /* GardenScenePreviews.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9138E9DE5F4F2C9B5AE8F9E /* GardenScenePreviews.swift */; };
 		F6414BAFA6701E401D2925EB /* NotificationProtocols.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27537CFF2FAB8BDFB2FBF94E /* NotificationProtocols.swift */; };
@@ -130,6 +136,7 @@
 /* Begin PBXFileReference section */
 		016589B2E400CA5B5FB224EB /* NotificationSettingsView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NotificationSettingsView.swift; sourceTree = "<group>"; };
 		1A8AAB210BC409F52FD4DE05 /* NotificationManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = NotificationManager.swift; path = Notifications/NotificationManager.swift; sourceTree = "<group>"; };
+		1D5E319EA9D69FA04C368DE4 /* WorldArt.xcassets */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = folder.assetcatalog; path = WorldArt.xcassets; sourceTree = "<group>"; };
 		1D8B74157D83310A3C6B2029 /* GardenRules.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = GardenRules.swift; path = Rules/GardenRules.swift; sourceTree = "<group>"; };
 		214F1E30E701531F8439B2CB /* GardenSnapshot+Preview.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "GardenSnapshot+Preview.swift"; path = "Rendering/GardenSnapshot+Preview.swift"; sourceTree = "<group>"; };
 		27426F2253790284B0C18490 /* GardenWidgetTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GardenWidgetTests.swift; sourceTree = "<group>"; };
@@ -166,6 +173,7 @@
 		92DA898AFC0104D4B79AD7F9 /* GratitudeGarden.entitlements */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.entitlements; path = GratitudeGarden.entitlements; sourceTree = "<group>"; };
 		9401047A797B149743B2EDD6 /* GratitudeGardenWidgetBundle.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GratitudeGardenWidgetBundle.swift; sourceTree = "<group>"; };
 		A67935F59B5DDA691D53B437 /* GrowthStage.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = GrowthStage.swift; path = Models/GrowthStage.swift; sourceTree = "<group>"; };
+		AA2A3091D6841B81BA4C66D4 /* WorldStage.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = WorldStage.swift; path = Models/WorldStage.swift; sourceTree = "<group>"; };
 		B026CB2D025036B56A9CB525 /* PixelSprite.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PixelSprite.swift; path = Rendering/PixelSprite.swift; sourceTree = "<group>"; };
 		B18701C130231D1FD6E04D25 /* GardenStoreTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GardenStoreTests.swift; sourceTree = "<group>"; };
 		B56F7C45D4A152015C8B5EF2 /* UserNotificationServices.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = UserNotificationServices.swift; path = Notifications/UserNotificationServices.swift; sourceTree = "<group>"; };
@@ -176,6 +184,7 @@
 		C35AB6199C643A959C581100 /* SharedContainerLocating.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SharedContainerLocating.swift; path = Storage/SharedContainerLocating.swift; sourceTree = "<group>"; };
 		C919D7F78DB5E388D2B8DF3C /* SoundPlayer.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SoundPlayer.swift; path = Feedback/SoundPlayer.swift; sourceTree = "<group>"; };
 		D01E9C5ACC68DF3488796688 /* Entry.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Entry.swift; path = Models/Entry.swift; sourceTree = "<group>"; };
+		D046E75BDE86B48A02AF5D31 /* GardenWorldArt.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = GardenWorldArt.swift; path = Rendering/GardenWorldArt.swift; sourceTree = "<group>"; };
 		D1892B351CC2F763901C4784 /* NotificationPlanner.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = NotificationPlanner.swift; path = Notifications/NotificationPlanner.swift; sourceTree = "<group>"; };
 		D2B569F84956E83E4D774FB2 /* AppPreferencesModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppPreferencesModel.swift; sourceTree = "<group>"; };
 		D9138E9DE5F4F2C9B5AE8F9E /* GardenScenePreviews.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = GardenScenePreviews.swift; path = Rendering/GardenScenePreviews.swift; sourceTree = "<group>"; };
@@ -252,6 +261,9 @@
 				B913A69DD9DCE2ED6D2946D2 /* WidgetReloading.swift */,
 				E882E2E2F7233014E91613EC /* GardenDeepLink.swift */,
 				EC3B64A77BFD387D3073E38F /* GardenTimelinePlanner.swift */,
+				AA2A3091D6841B81BA4C66D4 /* WorldStage.swift */,
+				D046E75BDE86B48A02AF5D31 /* GardenWorldArt.swift */,
+				1D5E319EA9D69FA04C368DE4 /* WorldArt.xcassets */,
 			);
 			name = Shared;
 			path = Shared;
@@ -443,6 +455,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B9F4A4BD18A45A7833A4C446 /* WorldArt.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -458,6 +471,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				8E8071D9635CDECB1516D30E /* Assets.xcassets in Resources */,
+				8DD418C393ED636EA7E51EF4 /* WorldArt.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -513,6 +527,8 @@
 				DFBAC15543C09817797C2D44 /* PrivacyView.swift in Sources */,
 				91BE6EC15E89D1C4B2DA978E /* SettingsView.swift in Sources */,
 				9091301543BC67525FAE506E /* WidgetCenterReloader.swift in Sources */,
+				A79D7F447B76BD989B2242AD /* WorldStage.swift in Sources */,
+				4D04C10196C0F9BFE978F83A /* GardenWorldArt.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -550,6 +566,8 @@
 				04D42CB2AD12A9FAE44C9570 /* GardenTimelinePlanner.swift in Sources */,
 				09CCDB17F1CCBE96A233706B /* GratitudeGardenWidget.swift in Sources */,
 				B66F0606213349319ABDD936 /* GratitudeGardenWidgetBundle.swift in Sources */,
+				942C651A2F28D0A7440FF8D2 /* WorldStage.swift in Sources */,
+				EC04913E49329B1C14DF7267 /* GardenWorldArt.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -590,7 +608,7 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CLANG_ENABLE_OBJC_WEAK = NO;
-				CODE_SIGNING_ALLOWED = NO;
+				CODE_SIGNING_ALLOWED = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -609,7 +627,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ENABLE_OBJC_WEAK = NO;
-				CODE_SIGNING_ALLOWED = NO;
+				CODE_SIGNING_ALLOWED = YES;
 				CODE_SIGN_ENTITLEMENTS = GratitudeGardenWidget/GratitudeGardenWidgetExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -630,7 +648,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ENABLE_OBJC_WEAK = NO;
-				CODE_SIGNING_ALLOWED = NO;
+				CODE_SIGNING_ALLOWED = YES;
 				CODE_SIGN_ENTITLEMENTS = GratitudeGardenWidget/GratitudeGardenWidgetExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -707,7 +725,7 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CLANG_ENABLE_OBJC_WEAK = NO;
-				CODE_SIGNING_ALLOWED = NO;
+				CODE_SIGNING_ALLOWED = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -727,7 +745,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CLANG_ENABLE_OBJC_WEAK = NO;
-				CODE_SIGNING_ALLOWED = NO;
+				CODE_SIGNING_ALLOWED = YES;
 				CODE_SIGN_ENTITLEMENTS = GratitudeGarden/GratitudeGarden.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -751,7 +769,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CLANG_ENABLE_OBJC_WEAK = NO;
-				CODE_SIGNING_ALLOWED = NO;
+				CODE_SIGNING_ALLOWED = YES;
 				CODE_SIGN_ENTITLEMENTS = GratitudeGarden/GratitudeGarden.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;

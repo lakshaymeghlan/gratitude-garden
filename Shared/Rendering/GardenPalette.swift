@@ -53,4 +53,20 @@ enum GardenPalette {
     // MARK: Light — warm firefly glow + pale floating motes
     static let firefly = RGB(r: 251, g: 233, b: 160)
     static let mote    = RGB(r: 248, g: 238, b: 210)
+
+    // MARK: Landscape — meadow flower varieties (soft, cohesive — no neon)
+    static let petalPurple = RGB(r: 178, g: 150, b: 214)
+    static let petalCoral  = RGB(r: 232, g: 122, b: 110)
+    static let petalWhite  = RGB(r: 245, g: 244, b: 236)
+
+    // MARK: Landscape — terrain
+    static let hillBack      = RGB(r: 150, g: 186, b: 120)
+    static let hillFront     = RGB(r: 110, g: 162, b: 96)
+    static let meadow        = RGB(r: 130, g: 176, b: 104)
+    static let mountainRock  = RGB(r: 150, g: 156, b: 170)
+    static let mountainSnow  = RGB(r: 236, g: 240, b: 244)
+    static let cloud         = RGB(r: 250, g: 248, b: 242)
+
+    /// The flower varieties unlocked as the world grows (index 0 first).
+    static let flowerVarieties: [RGB] = [petalPink, petalYellow, petalWhite, petalPurple, petalCoral, flowerCenter]
 }
