@@ -37,9 +37,16 @@ struct AppGroupContainerLocator: SharedContainerLocating {
     }
 
     func containerURL() throws -> URL {
-        guard let url = fileManager.containerURL(forSecurityApplicationGroupIdentifier: identifier) else {
-            throw SharedContainerError.appGroupUnavailable(identifier: identifier)
+        if let url = fileManager.containerURL(forSecurityApplicationGroupIdentifier: identifier) {
+            return url
         }
-        return url
+        // App Group unavailable (e.g. an unsigned simulator build with no provisioned group). Fall
+        // back to the app's own Application Support so the app still works standalone. Real
+        // app↔widget data sharing requires the App Group (a signed build with the capability).
+        let support = try fileManager.url(for: .applicationSupportDirectory, in: .userDomainMask,
+                                          appropriateFor: nil, create: true)
+        let dir = support.appendingPathComponent("GratitudeGarden", isDirectory: true)
+        try fileManager.createDirectory(at: dir, withIntermediateDirectories: true)
+        return dir
     }
 }
