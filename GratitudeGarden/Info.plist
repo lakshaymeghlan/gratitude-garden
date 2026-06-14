@@ -6,6 +6,8 @@
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
 	<string>Gratitude Garden</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Gratitude Garden uses your approximate location to show real local weather — rain, snow, and wind — as gentle atmosphere in your garden. You can decline; the garden simply stays clear.</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>

@@ -31,6 +31,20 @@ struct SettingsView: View {
                 Text("Sound is off by default and stays gentle. Haptics are subtle — only at meaningful moments.")
             }
 
+            Section {
+                Picker("Companion", selection: Binding(
+                    get: { preferences.petType },
+                    set: { preferences.setPetType($0) })) {
+                    ForEach(PetType.allCases) { pet in
+                        Text(pet.displayName).tag(pet)
+                    }
+                }
+            } header: {
+                Text("Companion")
+            } footer: {
+                Text("Your companion simply shares the garden — no feeding, no chores. Tap it to say hello.")
+            }
+
             Section("Accessibility") {
                 Text("The garden fully supports VoiceOver, Dynamic Type, and Reduced Motion. "
                      + "When Reduced Motion is on, the garden holds a calm, still frame.")

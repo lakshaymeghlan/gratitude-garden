@@ -4,6 +4,7 @@ import SwiftUI
 /// the experience; the interface is secondary. "I am visiting my world," not "I'm opening an app."
 struct ContentView: View {
     @State private var viewModel = GardenViewModel()
+    @State private var weatherModel = WeatherModel()
     @State private var showingJournal = false
     @State private var showingSettings = false
 
@@ -22,8 +23,16 @@ struct ContentView: View {
 
         return ZStack {
             // The world — edge to edge, behind everything, explorable.
-            GardenSceneView(snapshot: snapshot, homeStyle: preferences.homeStyle)
+            GardenSceneView(snapshot: snapshot,
+                            homeStyle: preferences.homeStyle,
+                            petType: preferences.petType,
+                            weather: weatherModel.weather,
+                            onPetWake: petFeedback)
                 .ignoresSafeArea()
+                .task { await weatherModel.refreshIfStale() }
+                .onChange(of: scenePhase) { _, phase in
+                    if phase == .active { Task { await weatherModel.refreshIfStale() } }
+                }
 
             // Gentle scrims top & bottom so glass controls and text stay legible over bright meadows.
             VStack(spacing: 0) {
@@ -145,6 +154,12 @@ struct ContentView: View {
     }
 
     // MARK: Feedback
+
+    /// Tapping the companion: a gentle hello — soft haptic + optional sound, both honoring settings.
+    private func petFeedback() {
+        if preferences.hapticsEnabled { haptics.entrySaved() }
+        if preferences.soundEnabled { sound.playPet(preferences.petType) }
+    }
 
     private func playFeedback(for outcome: EntrySaveOutcome) {
         if preferences.hapticsEnabled {
