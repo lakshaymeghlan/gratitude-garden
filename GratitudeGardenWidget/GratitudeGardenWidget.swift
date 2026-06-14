@@ -6,6 +6,7 @@ struct GardenEntry: TimelineEntry {
     let date: Date
     let snapshot: GardenSnapshot
     var homeStyle: HomeStyle = .cottage
+    var petType: PetType = .cat
 }
 
 /// Reads the shared `GardenState` and projects a timeline that **ages the garden over time** via the
@@ -21,22 +22,25 @@ struct GardenProvider: TimelineProvider {
         self.preferences = preferences
     }
 
-    private var homeStyle: HomeStyle { preferences.load().homeStyle }
+    private var prefs: AppPreferences { preferences.load() }
 
     func placeholder(in context: Context) -> GardenEntry {
-        GardenEntry(date: Date(), snapshot: GardenRules.snapshot(state: .empty, now: Date()), homeStyle: homeStyle)
+        let p = prefs
+        return GardenEntry(date: Date(), snapshot: GardenRules.snapshot(state: .empty, now: Date()),
+                           homeStyle: p.homeStyle, petType: p.petType)
     }
 
     func getSnapshot(in context: Context, completion: @escaping (GardenEntry) -> Void) {
+        let p = prefs
         completion(GardenEntry(date: Date(),
                                snapshot: GardenRules.snapshot(state: store.loadGarden(), now: Date()),
-                               homeStyle: homeStyle))
+                               homeStyle: p.homeStyle, petType: p.petType))
     }
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<GardenEntry>) -> Void) {
         let plan = GardenTimelinePlanner.plan(state: store.loadGarden(), now: Date())
-        let home = homeStyle
-        let entries = plan.moments.map { GardenEntry(date: $0.date, snapshot: $0.snapshot, homeStyle: home) }
+        let p = prefs
+        let entries = plan.moments.map { GardenEntry(date: $0.date, snapshot: $0.snapshot, homeStyle: p.homeStyle, petType: p.petType) }
         // `.atEnd`: once the projected arc (which already covers the full decay to dormancy) is done,
         // ask the system to rebuild. Day-boundary entries mean we never wake more than ~once a day.
         completion(Timeline(entries: entries, policy: .atEnd))
@@ -55,7 +59,7 @@ struct GratitudeGardenWidgetEntryView: View {
         overlay
             .containerBackground(for: .widget) {
                 // Same world renderer; static + fixed camera (widgets don't animate or accept gestures).
-                GardenSceneView(snapshot: snapshot, homeStyle: entry.homeStyle, animated: false, interactive: false)
+                GardenSceneView(snapshot: snapshot, homeStyle: entry.homeStyle, petType: entry.petType, animated: false, interactive: false)
             }
             .widgetURL(GardenDeepLink.composeURL)
     }
