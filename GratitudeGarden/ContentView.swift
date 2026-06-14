@@ -22,7 +22,7 @@ struct ContentView: View {
 
         return ZStack {
             // The world — edge to edge, behind everything, explorable.
-            GardenSceneView(snapshot: snapshot)
+            GardenSceneView(snapshot: snapshot, homeStyle: preferences.homeStyle)
                 .ignoresSafeArea()
 
             // Gentle scrims top & bottom so glass controls and text stay legible over bright meadows.
@@ -73,7 +73,10 @@ struct ContentView: View {
             isPresented: Binding(get: { !preferences.hasCompletedOnboarding }, set: { _ in }),
             onDismiss: { router.requestCompose() }
         ) {
-            OnboardingView { preferences.completeOnboarding() }
+            OnboardingView { home in
+                preferences.setHomeStyle(home)
+                preferences.completeOnboarding()
+            }
         }
         .task {
             viewModel.onAppear()

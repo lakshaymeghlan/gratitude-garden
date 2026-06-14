@@ -17,10 +17,12 @@ final class AppPreferencesModel {
     var hasCompletedOnboarding: Bool { preferences.hasCompletedOnboarding }
     var soundEnabled: Bool { preferences.soundEnabled }
     var hapticsEnabled: Bool { preferences.hapticsEnabled }
+    var homeStyle: HomeStyle { preferences.homeStyle }
 
     func completeOnboarding() { mutate { $0.hasCompletedOnboarding = true } }
     func setSoundEnabled(_ on: Bool) { mutate { $0.soundEnabled = on } }
     func setHapticsEnabled(_ on: Bool) { mutate { $0.hapticsEnabled = on } }
+    func setHomeStyle(_ style: HomeStyle) { mutate { $0.homeStyle = style } }
 
     private func mutate(_ change: (inout AppPreferences) -> Void) {
         change(&preferences)
