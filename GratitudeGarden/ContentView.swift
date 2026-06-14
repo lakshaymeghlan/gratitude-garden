@@ -1,6 +1,7 @@
 import SwiftUI
 
-/// Garden home screen. The pixel-art `GardenSceneView` is the hero; everything else is warm text.
+/// Home = the living world, full-bleed, with minimal glass controls floating above it. The garden is
+/// the experience; the interface is secondary. "I am visiting my world," not "I'm opening an app."
 struct ContentView: View {
     @State private var viewModel = GardenViewModel()
     @State private var showingJournal = false
@@ -18,83 +19,126 @@ struct ContentView: View {
 
     var body: some View {
         @Bindable var router = router
-        return NavigationStack {
-            ScrollView {
-                VStack(spacing: 18) {
-                    GardenSceneView(snapshot: snapshot)
-                        .aspectRatio(1.1, contentMode: .fit)
-                        .frame(maxWidth: .infinity)
-                        .clipShape(RoundedRectangle(cornerRadius: 22))
-                        .overlay(RoundedRectangle(cornerRadius: 22)
-                            .strokeBorder(.black.opacity(0.06), lineWidth: 1))
 
-                    stateText
-                    statsRow
-                    recentEntries
+        return ZStack {
+            // The world — edge to edge, behind everything, explorable.
+            GardenSceneView(snapshot: snapshot)
+                .ignoresSafeArea()
+
+            // Gentle scrims top & bottom so glass controls and text stay legible over bright meadows.
+            VStack(spacing: 0) {
+                LinearGradient(colors: [.black.opacity(0.20), .clear], startPoint: .top, endPoint: .bottom)
+                    .frame(height: 140)
+                Spacer()
+                LinearGradient(colors: [.clear, .black.opacity(0.28)], startPoint: .top, endPoint: .bottom)
+                    .frame(height: 240)
+            }
+            .ignoresSafeArea()
+            .allowsHitTesting(false)
+
+            // Floating glass interface (stays within the safe area).
+            VStack(spacing: 10) {
+                HStack {
+                    glassPill("Journal") { showingJournal = true }
+                    Spacer()
+                    glassPill("Settings") { showingSettings = true }
                 }
-                .padding()
+                Spacer()
+                statusPanel
+                tendButton
             }
-            .navigationTitle("Gratitude Garden")
-            .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button("Journal") { showingJournal = true }
+            .padding(.horizontal)
+            .padding(.bottom, 6)
+        }
+        .sheet(isPresented: $router.isComposing) {
+            EntryComposerView { drafts in
+                var lastOutcome: EntrySaveOutcome?
+                for draft in drafts {
+                    if let outcome = viewModel.save(text: draft.text, kind: draft.kind) { lastOutcome = outcome }
                 }
-                ToolbarItem(placement: .primaryAction) {
-                    Button("Settings") { showingSettings = true }
-                }
-            }
-            .safeAreaInset(edge: .bottom) {
-                Button {
-                    router.requestCompose()
-                } label: {
-                    Text("Tend your garden")
-                        .font(.headline)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 8)
-                }
-                .buttonStyle(.borderedProminent)
-                .padding()
-            }
-            .sheet(isPresented: $router.isComposing) {
-                EntryComposerView { drafts in
-                    var lastOutcome: EntrySaveOutcome?
-                    for draft in drafts {
-                        if let outcome = viewModel.save(text: draft.text, kind: draft.kind) {
-                            lastOutcome = outcome
-                        }
-                    }
-                    if let outcome = lastOutcome {
-                        router.isComposing = false
-                        playFeedback(for: outcome)
-                        Task { await notifications.refreshSchedule() }
-                    }
-                }
-            }
-            .sheet(isPresented: $showingJournal) {
-                NavigationStack { JournalView(entries: viewModel.entries) }
-            }
-            .sheet(isPresented: $showingSettings) {
-                NavigationStack {
-                    SettingsView(entries: viewModel.entries) { viewModel.resetGarden() }
-                }
-            }
-            .fullScreenCover(
-                isPresented: Binding(get: { !preferences.hasCompletedOnboarding }, set: { _ in }),
-                onDismiss: { router.requestCompose() }   // lead straight into the first entry
-            ) {
-                OnboardingView { preferences.completeOnboarding() }
-            }
-            .task {
-                viewModel.onAppear()
-                await notifications.onForeground()
-            }
-            .onChange(of: scenePhase) { _, newPhase in
-                if newPhase == .active {
-                    viewModel.refresh()
-                    Task { await notifications.onForeground() }
+                if let outcome = lastOutcome {
+                    router.isComposing = false
+                    playFeedback(for: outcome)
+                    Task { await notifications.refreshSchedule() }
                 }
             }
         }
+        .sheet(isPresented: $showingJournal) {
+            NavigationStack { JournalView(entries: viewModel.entries) }
+        }
+        .sheet(isPresented: $showingSettings) {
+            NavigationStack { SettingsView(entries: viewModel.entries) { viewModel.resetGarden() } }
+        }
+        .fullScreenCover(
+            isPresented: Binding(get: { !preferences.hasCompletedOnboarding }, set: { _ in }),
+            onDismiss: { router.requestCompose() }
+        ) {
+            OnboardingView { preferences.completeOnboarding() }
+        }
+        .task {
+            viewModel.onAppear()
+            await notifications.onForeground()
+        }
+        .onChange(of: scenePhase) { _, newPhase in
+            if newPhase == .active {
+                viewModel.refresh()
+                Task { await notifications.onForeground() }
+            }
+        }
+    }
+
+    // MARK: Floating glass controls
+
+    private func glassPill(_ title: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Text(title)
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(.primary)
+                .padding(.horizontal, 18)
+                .padding(.vertical, 11)
+        }
+        .background(.ultraThinMaterial, in: Capsule())
+        .overlay(Capsule().strokeBorder(.white.opacity(0.25), lineWidth: 0.5))
+        .shadow(color: .black.opacity(0.12), radius: 6, y: 2)
+    }
+
+    private var statusPanel: some View {
+        VStack(spacing: 3) {
+            Text(GardenCopy.vitalityTitle(snapshot.vitality, isReviving: viewModel.showWelcomeBack))
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(.primary)
+            Text("\(GardenCopy.growthTitle(snapshot.growthStage)) · \(snapshot.totalEntries) "
+                 + (snapshot.totalEntries == 1 ? "day" : "days"))
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
+        .padding(.horizontal, 20)
+        .padding(.vertical, 10)
+        .background(.ultraThinMaterial, in: Capsule())
+        .overlay(Capsule().strokeBorder(.white.opacity(0.2), lineWidth: 0.5))
+        .shadow(color: .black.opacity(0.12), radius: 6, y: 2)
+        .animation(.easeInOut, value: viewModel.showWelcomeBack)
+        .accessibilityElement(children: .combine)
+    }
+
+    private var tendButton: some View {
+        Button { router.requestCompose() } label: {
+            Text("Tend your garden")
+                .font(.headline)
+                .foregroundStyle(.primary)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 15)
+        }
+        .background {
+            ZStack {
+                Capsule().fill(.ultraThinMaterial)
+                Capsule().fill(Color.green.opacity(0.18))
+            }
+        }
+        .overlay(Capsule().strokeBorder(.white.opacity(0.3), lineWidth: 0.5))
+        .clipShape(Capsule())
+        .shadow(color: .black.opacity(0.18), radius: 10, y: 3)
+        .padding(.top, 4)
     }
 
     // MARK: Feedback
@@ -108,88 +152,6 @@ struct ContentView: View {
         if preferences.soundEnabled {
             sound.play(outcome.didRevive ? .revival : .entry)
         }
-    }
-
-    // MARK: Sections
-
-    private var stateText: some View {
-        VStack(spacing: 4) {
-            Text(GardenCopy.vitalityTitle(snapshot.vitality, isReviving: viewModel.showWelcomeBack))
-                .font(.title3.weight(.semibold))
-                .multilineTextAlignment(.center)
-            Text(GardenCopy.vitalitySubtitle(snapshot.vitality, isReviving: viewModel.showWelcomeBack))
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
-        }
-        .frame(maxWidth: .infinity)
-        .animation(.easeInOut, value: viewModel.showWelcomeBack)
-        .accessibilityElement(children: .combine)
-    }
-
-    private var statsRow: some View {
-        HStack(spacing: 10) {
-            statChip(value: GardenCopy.growthTitle(snapshot.growthStage), label: "Growth")
-            statChip(value: lastEntryText, label: "Last entry")
-            statChip(value: "\(snapshot.totalEntries)",
-                     label: snapshot.totalEntries == 1 ? "Day tended" : "Days tended")
-        }
-    }
-
-    private func statChip(value: String, label: String) -> some View {
-        VStack(spacing: 4) {
-            Text(value).font(.subheadline.weight(.semibold)).multilineTextAlignment(.center)
-            Text(label).font(.caption2).foregroundStyle(.secondary)
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 12)
-        .background(.fill.quaternary, in: RoundedRectangle(cornerRadius: 14))
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(label): \(value)")
-    }
-
-    private var recentEntries: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack {
-                Text("Recent").font(.headline)
-                Spacer()
-                if !viewModel.entries.isEmpty {
-                    Button("See all") { showingJournal = true }
-                        .font(.subheadline)
-                }
-            }
-
-            if viewModel.entries.isEmpty {
-                Text(GardenCopy.emptyJournalPrompt)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.vertical, 8)
-            } else {
-                ForEach(viewModel.entries.prefix(5)) { entry in
-                    entryRow(entry)
-                }
-            }
-        }
-    }
-
-    private func entryRow(_ entry: Entry) -> some View {
-        VStack(alignment: .leading, spacing: 2) {
-            Text(GardenCopy.kindLabel(entry.kind))
-                .font(.caption).foregroundStyle(.secondary)
-            Text(entry.text).font(.body)
-            Text(entry.date.formatted(date: .abbreviated, time: .omitted))
-                .font(.caption2).foregroundStyle(.tertiary)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding()
-        .background(.fill.quaternary, in: RoundedRectangle(cornerRadius: 12))
-        .accessibilityElement(children: .combine)
-    }
-
-    private var lastEntryText: String {
-        guard let date = snapshot.lastEntryDate else { return "—" }
-        return date.formatted(date: .abbreviated, time: .omitted)
     }
 }
 

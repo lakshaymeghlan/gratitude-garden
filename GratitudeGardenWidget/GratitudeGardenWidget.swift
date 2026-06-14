@@ -45,8 +45,8 @@ struct GratitudeGardenWidgetEntryView: View {
     var body: some View {
         overlay
             .containerBackground(for: .widget) {
-                // Same Phase 3 pipeline; static (widgets don't run continuous animation).
-                GardenSceneView(snapshot: snapshot, animated: false)
+                // Same world renderer; static + fixed camera (widgets don't animate or accept gestures).
+                GardenSceneView(snapshot: snapshot, animated: false, interactive: false)
             }
             .widgetURL(GardenDeepLink.composeURL)
     }
