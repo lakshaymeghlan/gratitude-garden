@@ -16,12 +16,12 @@ struct SeededGenerator: RandomNumberGenerator {
     }
 }
 
-/// The garden as a navigable, full-bleed, **crisp pixel-art** world drawn through a `GardenCamera`.
-///
-/// Everything snaps to a single pixel grid (`px`) for a cohesive "high-fidelity pixel art" look:
-/// blocky snow-capped mountains with slope shading, textured grass, golden-hour lighting + sun bloom
-/// + vignette, and grounding shadows. Content is generated deterministically per world chunk and
-/// culled to the visible rect. Growth (`worldStage`) sets richness; vitality (`GardenStyle`) tints.
+/// The garden as a calm, composed illustration — navigable and full-bleed, drawn through a
+/// `GardenCamera`. Deliberately built for **visual hierarchy**, not detail count:
+///   • Background (muted): clean snow-capped mountain silhouettes + sky.
+///   • Midground (slightly richer): a soft hill band + sparse trees + a path that leads the eye in.
+///   • Foreground (most colorful): flowers grouped into **patches/meadows** — the focal point.
+/// Growth (`worldStage`) expands and enriches the flower fields; vitality (`GardenStyle`) tints.
 struct GardenSceneView: View {
     let snapshot: GardenSnapshot
     var animated: Bool = true
@@ -105,493 +105,260 @@ struct GardenSceneView: View {
         return GardenStyle.lerp(GardenStyle.preRevival(target: target), target, progress)
     }
 
-    // MARK: - Render
+    // MARK: - Render (back → front, with a clear value/colour hierarchy)
 
     private func draw(into ctx: GraphicsContext, size: CGSize, camera: GardenCamera, style: GardenStyle, time: Double) {
-        let px = max(2, (size.width / 150).rounded())          // the world's pixel grid
-        let unit = max(2, size.height / 160) * camera.zoom
+        let unit = max(2, size.height / 150) * camera.zoom
         let stage = snapshot.worldStage.rawValue
+        let horizon = camera.horizonScreenY(size: size)
 
         drawSky(ctx, size, style)
         drawSunBloom(ctx, size)
-        drawClouds(ctx, size, camera, px: px, time: time)
-        drawMountains(ctx, size, camera, px: px)
-        drawHills(ctx, size, camera, px: px)
-        drawGround(ctx, size, camera)
-        drawTrees(ctx, size, camera, stage: stage, unit: unit, px: px, style: style, time: time)
-        drawForeground(ctx, size, camera, stage: stage, unit: unit, px: px, style: style, time: time)
+        drawClouds(ctx, size, camera, time: time)
+        drawMountains(ctx, size, camera, horizon: horizon, style: style)
+        drawHills(ctx, size, camera, horizon: horizon)
+        drawGround(ctx, size, horizon: horizon)
+        drawPath(ctx, size, camera)
+        drawTrees(ctx, size, camera, stage: stage, unit: unit, style: style, time: time)
+        drawFlowerPatches(ctx, size, camera, stage: stage, unit: unit, style: style, time: time)
         drawCreatures(ctx, size, camera, stage: stage, unit: unit, style: style, time: time)
         drawAtmosphere(ctx, size)
     }
 
     private func snap(_ v: CGFloat, _ px: CGFloat) -> CGFloat { (v / px).rounded() * px }
 
-    // Sky: warm golden-hour gradient (cool top → warm near horizon).
+    // MARK: Background — sky, sun, clouds (muted, recessive)
+
     private func drawSky(_ ctx: GraphicsContext, _ size: CGSize, _ style: GardenStyle) {
-        let warmHorizon = style.skyBottom.lerp(to: GardenPalette.petalYellow, 0.18)
+        let warmHorizon = style.skyBottom.lerp(to: GardenPalette.petalYellow, 0.16)
         ctx.fill(Path(CGRect(origin: .zero, size: size)),
                  with: .linearGradient(Gradient(stops: [
                     .init(color: style.skyTop.color, location: 0),
-                    .init(color: style.skyTop.lerp(to: style.skyBottom, 0.55).color, location: 0.42),
+                    .init(color: style.skyTop.lerp(to: style.skyBottom, 0.55).color, location: 0.45),
                     .init(color: warmHorizon.color, location: 0.72)]),
-                                       startPoint: .zero, endPoint: CGPoint(x: 0, y: size.height * 0.62)))
+                                       startPoint: .zero, endPoint: CGPoint(x: 0, y: size.height * 0.6)))
     }
 
-    // Soft sun + bloom upper-left, with a faint horizon glow.
     private func drawSunBloom(_ ctx: GraphicsContext, _ size: CGSize) {
-        let c = CGPoint(x: size.width * 0.27, y: size.height * 0.17)
-        let r = size.height * 0.6
+        let c = CGPoint(x: size.width * 0.28, y: size.height * 0.16)
+        let r = size.height * 0.5
         ctx.fill(Path(ellipseIn: CGRect(x: c.x - r, y: c.y - r, width: r * 2, height: r * 2)),
-                 with: .radialGradient(Gradient(colors: [GardenPalette.petalWhite.color.opacity(0.9),
-                                                         GardenPalette.petalYellow.color.opacity(0.28), .clear]),
+                 with: .radialGradient(Gradient(colors: [GardenPalette.petalWhite.color.opacity(0.75),
+                                                         GardenPalette.petalYellow.color.opacity(0.2), .clear]),
                                        center: c, startRadius: 0, endRadius: r))
-        let core = size.height * 0.05
+        let core = size.height * 0.04
         ctx.fill(Path(ellipseIn: CGRect(x: c.x - core, y: c.y - core, width: core * 2, height: core * 2)),
-                 with: .color(GardenPalette.petalWhite.color.opacity(0.85)))
+                 with: .color(GardenPalette.petalWhite.color.opacity(0.8)))
     }
 
-    // Blocky pixel clouds.
-    private func drawClouds(_ ctx: GraphicsContext, _ size: CGSize, _ camera: GardenCamera, px: CGFloat, time: Double) {
-        let parallax: CGFloat = 0.15, cell: CGFloat = 700
+    /// A few soft, clean clouds — calm, low-contrast, far back.
+    private func drawClouds(_ ctx: GraphicsContext, _ size: CGSize, _ camera: GardenCamera, time: Double) {
+        let parallax: CGFloat = 0.12, cell: CGFloat = 900
         let (minX, maxX) = camera.visibleWorldX(parallax: parallax, size: size, margin: cell)
         for c in Int(floor(minX / cell))...Int(ceil(maxX / cell)) {
             var rng = SeededGenerator(seed: gardenCellSeed(worldSeed, c, 0xC10D))
-            for _ in 0..<Int(rng.double(in: 1, 3)) {
-                let wx = CGFloat(c) * cell + CGFloat(rng.double(in: 0, Double(cell)))
-                let wy = CGFloat(rng.double(in: -360, -190)) + CGFloat(sin(time * 0.05 + rng.double(in: 0, 6)) * 6)
-                let p = camera.project(CGPoint(x: wx, y: wy), parallax: parallax, size: size)
-                let s = max(px, size.height * 0.018 * camera.zoom)
-                
-                for (dx, dy, w_mult) in [(-3.0, 1.0, 4.0), (0.0, 0.0, 5.0), (3.0, 1.0, 4.0), (-1.0, -1.0, 3.0)] as [(CGFloat,CGFloat,CGFloat)] {
-                    let cx_puff = snap(p.x + dx * s, px)
-                    let cy_puff = snap(p.y + dy * s, px)
-                    let w_puff = w_mult * s
-                    let h_puff = 2 * s
-                    let d_puff = s * 0.5
-                    
-                    let baseColor = GardenPalette.cloud
-                    let shadowColor = baseColor.lerp(to: GardenPalette.skyTop, 0.22)
-                    let topColor = RGB(r: 255, g: 255, b: 255)
-                    
-                    // Draw top face
-                    ctx.fill(Path(CGRect(x: cx_puff - w_puff/2, y: cy_puff - d_puff, width: w_puff, height: d_puff)),
-                             with: .color(topColor.color.opacity(0.9)))
-                    // Draw left face
-                    ctx.fill(Path(CGRect(x: cx_puff - w_puff/2, y: cy_puff, width: w_puff/2, height: h_puff)),
-                             with: .color(baseColor.color.opacity(0.9)))
-                    // Draw right face
-                    ctx.fill(Path(CGRect(x: cx_puff, y: cy_puff, width: w_puff/2, height: h_puff)),
-                             with: .color(shadowColor.color.opacity(0.9)))
-                }
+            let wx = CGFloat(c) * cell + CGFloat(rng.double(in: 0, Double(cell)))
+            let wy = CGFloat(rng.double(in: -360, -220)) + CGFloat(sin(time * 0.04 + rng.double(in: 0, 6)) * 5)
+            let p = camera.project(CGPoint(x: wx, y: wy), parallax: parallax, size: size)
+            let r: CGFloat = size.height * 0.045 * camera.zoom
+            let puffs: [(CGFloat, CGFloat, CGFloat)] = [(-1.3, 0.1, 1.0), (0.0, -0.35, 1.25), (1.3, 0.1, 0.95)]
+            let cloudColor = GardenPalette.cloud.color.opacity(0.7)
+            for puff in puffs {
+                let x: CGFloat = p.x + puff.0 * r
+                let y: CGFloat = p.y + puff.1 * r
+                let w: CGFloat = r * 2 * puff.2
+                let h: CGFloat = r * 1.25 * puff.2
+                ctx.fill(Path(ellipseIn: CGRect(x: x, y: y, width: w, height: h)), with: .color(cloudColor))
             }
         }
     }
 
-    private func drawMountains(_ ctx: GraphicsContext, _ size: CGSize, _ camera: GardenCamera, px: CGFloat) {
-        drawRidge(ctx, size, camera, parallax: 0.20, peak: size.height * 0.40, phase: 1.1, haze: 0.62, px: px * 2)
-        drawRidge(ctx, size, camera, parallax: 0.33, peak: size.height * 0.55, phase: 3.7, haze: 0.34, px: px * 1.5)
-        drawRidge(ctx, size, camera, parallax: 0.47, peak: size.height * 0.68, phase: 6.2, haze: 0.12, px: px)
+    // MARK: Background — mountains (clean silhouettes, strong layering, atmospheric haze)
+
+    private func drawMountains(_ ctx: GraphicsContext, _ size: CGSize, _ camera: GardenCamera, horizon: CGFloat, style: GardenStyle) {
+        // Far → near: each range darker/closer and a touch more saturated. Heavily hazed so they
+        // recede behind the flowers and never compete with the foreground.
+        drawRange(ctx, size, camera, horizon: horizon, parallax: 0.18, peakFrac: 0.34, phase: 1.1,
+                  haze: 0.74, snowAt: 0.62, sky: style.skyTop)
+        drawRange(ctx, size, camera, horizon: horizon, parallax: 0.30, peakFrac: 0.46, phase: 3.8,
+                  haze: 0.52, snowAt: 0.50, sky: style.skyTop)
+        drawRange(ctx, size, camera, horizon: horizon, parallax: 0.44, peakFrac: 0.58, phase: 6.2,
+                  haze: 0.34, snowAt: 0.46, sky: style.skyTop)
     }
 
-    private func voxelHeight(worldX: CGFloat, worldZ: CGFloat, peak: CGFloat, phase: Double, maxZ: Int, voxelSizeWorld: CGFloat) -> CGFloat {
-        let x1 = Double(worldX) * 0.005 + phase
-        let z1 = Double(worldZ) * 0.008 + phase * 0.7
-        let x2 = Double(worldX) * 0.015 - phase * 0.3
-        let z2 = Double(worldZ) * 0.022 + phase * 1.2
-        
-        let n1 = sin(x1) * cos(z1)
-        let n2 = sin(x2) * sin(z2)
-        
-        let base = abs(n1 * 0.7 + n2 * 0.3)
-        let ridged = 1.0 - pow(1.0 - base, 3.0)
-        
-        var h = peak * CGFloat(0.15 + 0.85 * ridged)
-        
-        let maxZWorld = CGFloat(maxZ) * voxelSizeWorld
-        let zRatio = min(1.0, max(0.0, worldZ / maxZWorld))
-        let zFade = sin(zRatio * .pi)
-        h *= CGFloat(zFade)
-        
-        return h
-    }
+    private func drawRange(_ ctx: GraphicsContext, _ size: CGSize, _ camera: GardenCamera, horizon: CGFloat,
+                           parallax: CGFloat, peakFrac: CGFloat, phase: Double, haze: Double, snowAt: CGFloat, sky: RGB) {
+        let rock = GardenPalette.mountainRock.lerp(to: sky, haze)
+        let snow = GardenPalette.mountainSnow.lerp(to: sky, haze * 0.5)
+        let peakWorld = size.height * peakFrac
+        let step: CGFloat = 5
 
-    private func drawRidge(_ ctx: GraphicsContext, _ size: CGSize, _ camera: GardenCamera,
-                           parallax: CGFloat, peak: CGFloat, phase: Double, haze: Double, px: CGFloat) {
-        let rock = GardenPalette.mountainRock.lerp(to: GardenPalette.skyTop, haze)
-        let rockShadow = rock.lerp(to: GardenPalette.soilDark, 0.22)
-        let snow = GardenPalette.mountainSnow.lerp(to: GardenPalette.skyTop, haze * 0.6)
-        let snowShadow = snow.lerp(to: rock, 0.30)
-        let grass = GardenPalette.hillBack.lerp(to: GardenPalette.skyTop, haze)
-        let grassShadow = grass.lerp(to: GardenPalette.soilDark, 0.25)
-        
-        let maxZ = 12
-        let depthFactor: CGFloat = 0.45
-        let voxelSizeWorld: CGFloat = 6.0
-        
-        let w = max(px, snap(voxelSizeWorld * camera.zoom, px))
-        let d = max(px, snap(voxelSizeWorld * depthFactor * camera.zoom, px))
-        
-        let (minX, maxX) = camera.visibleWorldX(parallax: parallax, size: size, margin: voxelSizeWorld * 2)
-        let startX = floor(minX / voxelSizeWorld) * voxelSizeWorld
-        let endX = ceil(maxX / voxelSizeWorld) * voxelSizeWorld
-        
-        for z in 0..<maxZ {
-            let worldZ = CGFloat(z) * voxelSizeWorld
-            for worldX in stride(from: startX, through: endX, by: voxelSizeWorld) {
-                let h = voxelHeight(worldX: worldX, worldZ: worldZ, peak: peak, phase: phase, maxZ: maxZ, voxelSizeWorld: voxelSizeWorld)
-                guard h > 1.0 else { continue }
-                
-                let pCurrent = camera.project(CGPoint(x: worldX, y: -h + worldZ * depthFactor), parallax: parallax, size: size)
-                let sx = snap(pCurrent.x, px)
-                let sy = snap(pCurrent.y, px)
-                
-                let hFront: CGFloat
-                if z == maxZ - 1 {
-                    hFront = 0
-                } else {
-                    hFront = voxelHeight(worldX: worldX, worldZ: worldZ + voxelSizeWorld, peak: peak, phase: phase, maxZ: maxZ, voxelSizeWorld: voxelSizeWorld)
-                }
-                
-                let pFront = camera.project(CGPoint(x: worldX, y: -hFront + (worldZ + voxelSizeWorld) * depthFactor), parallax: parallax, size: size)
-                let heightScreen = snap(pFront.y, px) - sy
-                
-                var rng = SeededGenerator(seed: gardenCellSeed(worldSeed, Int(worldX / voxelSizeWorld), UInt64(z)))
-                let snowThreshold = peak * CGFloat(rng.double(in: 0.52, 0.62))
-                let grassThreshold = peak * CGFloat(rng.double(in: 0.26, 0.36))
-                
-                let isSnow = h > snowThreshold
-                let isGrass = h < grassThreshold
-                
-                let baseColor: RGB
-                let shadowColor: RGB
-                if isSnow {
-                    baseColor = snow
-                    shadowColor = snowShadow
-                } else if isGrass {
-                    baseColor = grass
-                    shadowColor = grassShadow
-                } else {
-                    baseColor = rock
-                    shadowColor = rockShadow
-                }
-                
-                // 3D Ray-cast Shadow Solver
-                var inShadow = false
-                for step in 1...3 {
-                    let checkX = worldX - CGFloat(step) * voxelSizeWorld
-                    let checkZ = worldZ - CGFloat(step) * voxelSizeWorld * 0.5
-                    let checkH = voxelHeight(worldX: checkX, worldZ: checkZ, peak: peak, phase: phase, maxZ: maxZ, voxelSizeWorld: voxelSizeWorld)
-                    if checkH > h + CGFloat(step) * 3.5 {
-                        inShadow = true
-                        break
-                    }
-                }
-                
-                // Ambient Occlusion Solver
-                let hL = voxelHeight(worldX: worldX - voxelSizeWorld, worldZ: worldZ, peak: peak, phase: phase, maxZ: maxZ, voxelSizeWorld: voxelSizeWorld)
-                let hR = voxelHeight(worldX: worldX + voxelSizeWorld, worldZ: worldZ, peak: peak, phase: phase, maxZ: maxZ, voxelSizeWorld: voxelSizeWorld)
-                let hB = voxelHeight(worldX: worldX, worldZ: worldZ - voxelSizeWorld, peak: peak, phase: phase, maxZ: maxZ, voxelSizeWorld: voxelSizeWorld)
-                let hF = voxelHeight(worldX: worldX, worldZ: worldZ + voxelSizeWorld, peak: peak, phase: phase, maxZ: maxZ, voxelSizeWorld: voxelSizeWorld)
-                
-                var ao: Double = 1.0
-                if hL > h + 3.0 { ao -= 0.08 }
-                if hR > h + 3.0 { ao -= 0.08 }
-                if hB > h + 3.0 { ao -= 0.08 }
-                if hF > h + 3.0 { ao -= 0.08 }
-                
-                let hNext = voxelHeight(worldX: worldX + voxelSizeWorld, worldZ: worldZ, peak: peak, phase: phase, maxZ: maxZ, voxelSizeWorld: voxelSizeWorld)
-                let lit = hNext <= h
-                
-                let litTop = baseColor.lerp(to: GardenPalette.petalYellow, 0.08)
-                let shadowTop = shadowColor
-                
-                let topColor = (inShadow ? shadowTop : litTop).lerp(to: GardenPalette.soilDark, (1.0 - ao) * 0.6)
-                let leftColor = (inShadow ? shadowColor : (lit ? baseColor : shadowColor)).lerp(to: GardenPalette.soilDark, (1.0 - ao) * 0.6)
-                let rightColor = shadowColor.lerp(to: GardenPalette.soilDark, (1.0 - ao) * 0.6)
-                
-                // Draw top face
-                ctx.fill(Path(CGRect(x: sx - w/2, y: sy - d, width: w, height: d)), with: .color(topColor.color))
-                
-                // Draw side faces
-                if heightScreen > 0 {
-                    ctx.fill(Path(CGRect(x: sx - w/2, y: sy, width: w/2, height: heightScreen)), with: .color(leftColor.color))
-                    ctx.fill(Path(CGRect(x: sx, y: sy, width: w/2, height: heightScreen)), with: .color(rightColor.color))
-                }
-            }
-        }
-    }
-
-    // MARK: – Ground elevation shared by ground renderer + prop placement
-
-    /// Rolling meadow elevation for a world (x, z) position. `worldZ` = 0 is horizon; grows toward camera.
-    private func groundElevation(worldX: CGFloat, worldZ: CGFloat) -> CGFloat {
-        let x1 = Double(worldX) * 0.0055 + 1.3
-        let z1 = Double(worldZ) * 0.0060 + 0.7
-        let x2 = Double(worldX) * 0.0140 + 2.9
-        let z2 = Double(worldZ) * 0.0120 + 1.8
-        let n1 = sin(x1) * cos(z1)
-        let n2 = sin(x2) * sin(z2)
-        return 8 + CGFloat(n1 * 22 + n2 * 12)
-    }
-
-    private func hillHeight(worldX: CGFloat, worldZ: CGFloat, phase: Double, maxZ: Int, voxelSizeWorld: CGFloat) -> CGFloat {
-        let x1 = Double(worldX) * 0.007 + phase
-        let z1 = Double(worldZ) * 0.012
-        let x2 = Double(worldX) * 0.020 + phase * 1.5
-        let z2 = Double(worldZ) * 0.025 + 0.5
-        let n1 = sin(x1) * cos(z1)
-        let n2 = sin(x2) * cos(z2)
-        var h = 18 + CGFloat(n1 * 22 + n2 * 12)
-
-        let maxZWorld = CGFloat(maxZ) * voxelSizeWorld
-        let zRatio = min(1.0, max(0.0, worldZ / maxZWorld))
-        let zFade = sin(zRatio * .pi)
-        h *= CGFloat(zFade)
-
-        return h
-    }
-
-    private func drawHills(_ ctx: GraphicsContext, _ size: CGSize, _ camera: GardenCamera, px: CGFloat) {
-        let parallax: CGFloat = 0.55
-        let maxZ = 8
-        let depthFactor: CGFloat = 0.45
-        let voxelSizeWorld: CGFloat = 8.0
-
-        let w = max(px, snap(voxelSizeWorld * camera.zoom, px))
-        let d = max(px, snap(voxelSizeWorld * depthFactor * camera.zoom, px))
-
-        let (minX, maxX) = camera.visibleWorldX(parallax: parallax, size: size, margin: voxelSizeWorld * 2)
-        let startX = floor(minX / voxelSizeWorld) * voxelSizeWorld
-        let endX   = ceil(maxX / voxelSizeWorld) * voxelSizeWorld
-
-        let hillBase   = GardenPalette.hillBack
-        let hillShadow = GardenPalette.hillFront
-
-        for z in 0..<maxZ {
-            let worldZ = CGFloat(z) * voxelSizeWorld
-            for worldX in stride(from: startX, through: endX, by: voxelSizeWorld) {
-                let h = hillHeight(worldX: worldX, worldZ: worldZ, phase: 2.1, maxZ: maxZ, voxelSizeWorld: voxelSizeWorld)
-                guard h > 0.5 else { continue }
-
-                let pC = camera.project(CGPoint(x: worldX, y: -h + worldZ * depthFactor), parallax: parallax, size: size)
-                let sx = snap(pC.x, px), sy = snap(pC.y, px)
-
-                let hFront: CGFloat = (z == maxZ - 1) ? 0 :
-                    hillHeight(worldX: worldX, worldZ: worldZ + voxelSizeWorld, phase: 2.1, maxZ: maxZ, voxelSizeWorld: voxelSizeWorld)
-                let pF = camera.project(CGPoint(x: worldX, y: -hFront + (worldZ + voxelSizeWorld) * depthFactor), parallax: parallax, size: size)
-                let heightScreen = snap(pF.y, px) - sy
-
-                // Directional shadow (sun from top-left)
-                var inShadow = false
-                for step in 1...2 {
-                    let chX = worldX - CGFloat(step) * voxelSizeWorld
-                    let chZ = worldZ - CGFloat(step) * voxelSizeWorld * 0.5
-                    let chH = hillHeight(worldX: chX, worldZ: chZ, phase: 2.1, maxZ: maxZ, voxelSizeWorld: voxelSizeWorld)
-                    if chH > h + CGFloat(step) * 4 { inShadow = true; break }
-                }
-
-                let hNext = hillHeight(worldX: worldX + voxelSizeWorld, worldZ: worldZ, phase: 2.1, maxZ: maxZ, voxelSizeWorld: voxelSizeWorld)
-                let lit = hNext <= h
-
-                let top   = (inShadow ? hillShadow : hillBase.lerp(to: GardenPalette.petalYellow, 0.06))
-                let left  = inShadow ? hillShadow : (lit ? hillBase : hillShadow)
-                let right = hillShadow
-
-                ctx.fill(Path(CGRect(x: sx - w/2, y: sy - d, width: w, height: d)), with: .color(top.color))
-                if heightScreen > 0 {
-                    ctx.fill(Path(CGRect(x: sx - w/2, y: sy, width: w/2, height: heightScreen)), with: .color(left.color))
-                    ctx.fill(Path(CGRect(x: sx,       y: sy, width: w/2, height: heightScreen)), with: .color(right.color))
-                }
-            }
-        }
-    }
-
-    private func drawGround(_ ctx: GraphicsContext, _ size: CGSize, _ camera: GardenCamera) {
-        let horizon = camera.horizonScreenY(size: size)
-        guard size.height > horizon else { return }
-
-        let px     = max(2, (size.width / 160).rounded())
-        let vox    = max(px, snap(7.0 * camera.zoom, px))
-        let voxD   = max(px, snap(7.0 * 0.45 * camera.zoom, px))
-        let voxZ   = 24                         // depth layers from horizon to camera
-        let vSizeW: CGFloat = 7.0               // world units per voxel
-
-        // Shared palette
-        let grassTop    = GardenPalette.meadow
-        let grassLeft   = GardenPalette.hillFront
-        let grassRight  = grassLeft.lerp(to: GardenPalette.soilDark, 0.28)
-        let dirtLeft    = GardenPalette.soilLight
-        let dirtRight   = GardenPalette.soilDark
-
-        // Flower cluster noise thresholds
-        // Left half → warm red/coral cluster; right half → purple/lavender cluster
-        let flowerRedColor    = GardenPalette.petalCoral
-        let flowerPurpleColor = GardenPalette.petalPurple
-        let flowerPinkColor   = GardenPalette.petalPink
-
-        let (minX, maxX) = camera.visibleWorldX(parallax: 1.0, size: size, margin: vSizeW * 4)
-        let startX = floor(minX / vSizeW) * vSizeW
-        let endX   = ceil(maxX  / vSizeW) * vSizeW
-
-        for z in 0..<voxZ {
-            let worldZ  = CGFloat(z) * vSizeW
-            let wZNext  = worldZ + vSizeW
-
-            for worldX in stride(from: startX, through: endX, by: vSizeW) {
-                let elev     = groundElevation(worldX: worldX, worldZ: worldZ)
-                let elevNext = groundElevation(worldX: worldX, worldZ: wZNext)
-
-                let pTop  = camera.project(CGPoint(x: worldX, y: elev + worldZ * 0.45),  parallax: 1.0, size: size)
-                let pFront = camera.project(CGPoint(x: worldX, y: elevNext + wZNext * 0.45), parallax: 1.0, size: size)
-
-                let sx    = snap(pTop.x,   px)
-                let sy    = snap(pTop.y,   px)
-                let sFY   = snap(pFront.y, px)
-                let sideH = max(0, sFY - sy)
-
-                guard sy < size.height + vox && sFY > horizon - vox else { continue }
-
-                // Directional shadow
-                var inShadow = false
-                for step in 1...3 {
-                    let chX = worldX - CGFloat(step) * vSizeW
-                    let chZ = worldZ - CGFloat(step) * vSizeW * 0.5
-                    let chE = groundElevation(worldX: chX, worldZ: chZ)
-                    if chE > elev + CGFloat(step) * 3.5 { inShadow = true; break }
-                }
-
-                let hNext = groundElevation(worldX: worldX + vSizeW, worldZ: worldZ)
-                let lit   = hNext <= elev
-
-                let tColor = inShadow ? grassLeft : grassTop.lerp(to: GardenPalette.petalYellow, 0.10)
-                let lColor = inShadow ? grassRight : (lit ? grassLeft : grassRight)
-                let rColor = grassRight
-
-                // Grass top face
-                ctx.fill(Path(CGRect(x: sx - vox/2, y: sy - voxD, width: vox, height: voxD)), with: .color(tColor.color))
-                // Dirt side faces
-                if sideH > 0 {
-                    ctx.fill(Path(CGRect(x: sx - vox/2, y: sy, width: vox/2, height: sideH)), with: .color((inShadow ? dirtRight : dirtLeft).color))
-                    ctx.fill(Path(CGRect(x: sx,         y: sy, width: vox/2, height: sideH)), with: .color(dirtRight.color))
-                }
-
-                // ── Flower clusters ─────────────────────────────────────────
-                // Use two noise values at different frequencies for cluster density
-                let fx1  = Double(worldX) * 0.022 + Double(worldZ) * 0.018 + 4.1
-                let fz1  = Double(worldZ) * 0.030 + Double(worldX) * 0.010 + 2.7
-                let fx2  = Double(worldX) * 0.055 + Double(worldZ) * 0.040 + 7.3
-                let fz2  = Double(worldZ) * 0.062 + Double(worldX) * 0.025 + 1.2
-
-                let clusterN  = (sin(fx1) * cos(fz1) + 1.0) / 2.0    // 0…1 smooth cluster field
-                let detailN   = (sin(fx2) * cos(fz2) + 1.0) / 2.0    // 0…1 detail scatter
-
-                // Determine cluster zone
-                let xNorm = Double(worldX)
-                let redZone    = sin(xNorm * 0.009 + 0.5) > 0.15       // warm cluster side
-                let purpleZone = sin(xNorm * 0.009 + 0.5) < -0.15      // cool cluster side
-
-                let inFlowerField = clusterN > 0.52 && detailN > 0.35
-
-                if inFlowerField && !inShadow {
-                    let flowerColor: RGB
-                    if redZone         { flowerColor = flowerRedColor }
-                    else if purpleZone { flowerColor = flowerPurpleColor }
-                    else               { flowerColor = flowerPinkColor }
-
-                    let flowerShadow = flowerColor.lerp(to: GardenPalette.soilDark, 0.28)
-
-                    let fw = max(px, snap(vox * 0.55, px))
-                    let fh = max(px, snap(vox * 0.70, px))
-                    let fd = max(px, snap(fw * 0.45, px))
-
-                    // Flower top
-                    ctx.fill(Path(CGRect(x: sx - fw/2, y: sy - voxD - fh - fd, width: fw, height: fd)),
-                             with: .color(flowerColor.lerp(to: GardenPalette.petalWhite, 0.15).color))
-                    // Flower left
-                    ctx.fill(Path(CGRect(x: sx - fw/2, y: sy - voxD - fh, width: fw/2, height: fh)),
-                             with: .color(flowerColor.color))
-                    // Flower right (shadow)
-                    ctx.fill(Path(CGRect(x: sx,         y: sy - voxD - fh, width: fw/2, height: fh)),
-                             with: .color(flowerShadow.color))
-                }
-            }
+        func topY(_ sx: CGFloat) -> CGFloat {
+            let worldX = (sx - size.width / 2) / camera.zoom + camera.position.x * parallax
+            let n = sin(Double(worldX) * 0.0016 + phase) * 0.6 + sin(Double(worldX) * 0.0041 + phase * 1.9) * 0.4
+            let h = peakWorld * CGFloat(0.5 + 0.42 * n)
+            return camera.project(CGPoint(x: worldX, y: -h), parallax: parallax, size: size).y
         }
 
-        // Warm sun-from-left overlay
+        var ridge = Path()
+        ridge.move(to: CGPoint(x: 0, y: horizon))
+        var sx: CGFloat = 0
+        while sx <= size.width { ridge.addLine(to: CGPoint(x: sx, y: topY(sx))); sx += step }
+        ridge.addLine(to: CGPoint(x: size.width, y: horizon))
+        ridge.closeSubpath()
+
+        // Clip to the silhouette, then snow on top, rock below a clean snow line → tidy caps.
+        var mc = ctx
+        mc.clip(to: ridge)
+        let snowLineY = horizon - peakWorld * camera.zoom * snowAt
+        mc.fill(Path(CGRect(origin: .zero, size: size)), with: .color(snow.color))
+        mc.fill(Path(CGRect(x: 0, y: snowLineY, width: size.width, height: max(0, size.height - snowLineY))),
+                with: .color(rock.color))
+    }
+
+    // MARK: Midground — hill band (slightly richer than the mountains, behind the meadow)
+
+    private func drawHills(_ ctx: GraphicsContext, _ size: CGSize, _ camera: GardenCamera, horizon: CGFloat) {
+        let parallax: CGFloat = 0.55, step: CGFloat = 6
+        let color = GardenPalette.hillBack.lerp(to: GardenPalette.skyBottom, 0.18)
+        var path = Path()
+        path.move(to: CGPoint(x: 0, y: size.height))
+        var sx: CGFloat = 0
+        var started = false
+        while sx <= size.width {
+            let worldX = (sx - size.width / 2) / camera.zoom + camera.position.x * parallax
+            let n = sin(Double(worldX) * 0.0055 + 2.1) * 0.7 + sin(Double(worldX) * 0.013 + 0.5) * 0.3
+            let y = camera.project(CGPoint(x: worldX, y: -28 + CGFloat(n) * 34), parallax: parallax, size: size).y
+            if !started { path.addLine(to: CGPoint(x: 0, y: y)); started = true }
+            path.addLine(to: CGPoint(x: sx, y: y))
+            sx += step
+        }
+        path.addLine(to: CGPoint(x: size.width, y: size.height))
+        path.closeSubpath()
+        ctx.fill(path, with: .color(color.color))
+    }
+
+    // MARK: Foreground ground — clean meadow gradient + warm light
+
+    private func drawGround(_ ctx: GraphicsContext, _ size: CGSize, horizon: CGFloat) {
         let h = max(0, size.height - horizon)
+        guard h > 0 else { return }
+        let near = GardenPalette.meadow.lerp(to: GardenPalette.leafDark, 0.28)
         ctx.fill(Path(CGRect(x: 0, y: horizon, width: size.width, height: h)),
-                 with: .linearGradient(Gradient(colors: [GardenPalette.petalYellow.color.opacity(0.16), .clear]),
-                                       startPoint: CGPoint(x: 0, y: horizon),
-                                       endPoint:   CGPoint(x: size.width * 0.85, y: horizon)))
+                 with: .linearGradient(Gradient(stops: [
+                    .init(color: GardenPalette.hillFront.lerp(to: GardenPalette.skyBottom, 0.12).color, location: 0),
+                    .init(color: GardenPalette.meadow.color, location: 0.35),
+                    .init(color: near.color, location: 1)]),
+                                       startPoint: CGPoint(x: 0, y: horizon), endPoint: CGPoint(x: 0, y: size.height)))
+        ctx.fill(Path(CGRect(x: 0, y: horizon, width: size.width, height: h)),
+                 with: .linearGradient(Gradient(colors: [GardenPalette.petalYellow.color.opacity(0.14), .clear]),
+                                       startPoint: CGPoint(x: 0, y: horizon), endPoint: CGPoint(x: size.width * 0.85, y: horizon)))
     }
+
+    // MARK: The path — a clear anchor that leads the eye toward the valley
+
+    private func drawPath(_ ctx: GraphicsContext, _ size: CGSize, _ camera: GardenCamera) {
+        let parallax: CGFloat = 1.0
+        let edge = GardenPalette.soilTop.lerp(to: GardenPalette.soilDark, 0.30)
+        let fill = GardenPalette.soilTop
+
+        func center(_ worldY: CGFloat) -> CGPoint {
+            let worldX = sin(Double(worldY) * 0.012) * 34          // gentle S-curve, anchored near origin
+            return camera.project(CGPoint(x: CGFloat(worldX), y: worldY), parallax: parallax, size: size)
+        }
+        func halfWidth(_ worldY: CGFloat) -> CGFloat {
+            let t = max(0, min(1, (worldY - 8) / 320))             // far → near
+            return (3 + 70 * t) * camera.zoom
+        }
+        func ribbon(widen: CGFloat) -> Path {
+            var p = Path()
+            var ys = [CGFloat](); var y: CGFloat = 8; while y <= 330 { ys.append(y); y += 14 }
+            var first = true
+            for wy in ys {
+                let c = center(wy), hw = halfWidth(wy) + widen
+                let pt = CGPoint(x: c.x - hw, y: c.y)
+                if first { p.move(to: pt); first = false } else { p.addLine(to: pt) }
+            }
+            for wy in ys.reversed() {
+                let c = center(wy), hw = halfWidth(wy) + widen
+                p.addLine(to: CGPoint(x: c.x + hw, y: c.y))
+            }
+            p.closeSubpath()
+            return p
+        }
+        ctx.fill(ribbon(widen: max(1, size.width * 0.006)), with: .color(edge.color.opacity(0.9)))
+        ctx.fill(ribbon(widen: 0), with: .color(fill.color))
+    }
+
+    // MARK: Midground — sparse trees on the hill line (muted, not competing)
 
     private func drawTrees(_ ctx: GraphicsContext, _ size: CGSize, _ camera: GardenCamera,
-                           stage: Int, unit: CGFloat, px: CGFloat, style: GardenStyle, time: Double) {
-        guard stage >= 2 else { return }
-        let parallax: CGFloat = 0.72, cell: CGFloat = 220
-        let vSizeW: CGFloat = 7.0
-        let perCell = [0, 0, 1, 1, 2, 2, 3][min(stage, 6)]
+                           stage: Int, unit: CGFloat, style: GardenStyle, time: Double) {
+        guard stage >= 3 else { return }
+        let parallax: CGFloat = 0.6, cell: CGFloat = 520
+        let perCell = [0, 0, 0, 1, 1, 2, 2][min(stage, 6)]
         let (minX, maxX) = camera.visibleWorldX(parallax: parallax, size: size, margin: cell)
         for c in Int(floor(minX / cell))...Int(ceil(maxX / cell)) {
             var rng = SeededGenerator(seed: gardenCellSeed(worldSeed, c, 0x77EE))
             for _ in 0..<perCell {
                 let wx = CGFloat(c) * cell + CGFloat(rng.double(in: 0, Double(cell)))
-                // Snap to the nearest ground voxel and query elevation
-                let wz = CGFloat(rng.double(in: 2, 8)) * vSizeW
-                let elev = groundElevation(worldX: wx, worldZ: wz)
-                let wy = elev + wz * 0.45
-                let p = camera.project(CGPoint(x: wx, y: wy), parallax: parallax, size: size)
+                let p = camera.project(CGPoint(x: wx, y: -18), parallax: parallax, size: size)
                 if p.x < -60 || p.x > size.width + 60 { continue }
-                let sway = swayOffset(time: time, phase: rng.double(in: 0, 6), style: style) * unit * 0.5
-                drawTree(ctx, base: p, unit: unit * 2.0, sway: sway, px: px)
+                let sway = swayOffset(time: time, phase: rng.double(in: 0, 6), style: style) * unit * 0.4
+                drawTree(ctx, base: p, unit: unit * 1.8, sway: sway)
             }
         }
     }
 
-    private func drawForeground(_ ctx: GraphicsContext, _ size: CGSize, _ camera: GardenCamera,
-                                stage: Int, unit: CGFloat, px: CGFloat, style: GardenStyle, time: Double) {
-        let parallax: CGFloat = 1.0, cell: CGFloat = 170
-        let vSizeW: CGFloat = 7.0
-        let density = [5, 12, 20, 28, 36, 44, 52][min(stage, 6)]
-        let varieties = max(1, min(GardenPalette.flowerVarieties.count, stage + 1))
+    // MARK: Foreground — flowers grouped into patches (the focal point)
+
+    private func drawFlowerPatches(_ ctx: GraphicsContext, _ size: CGSize, _ camera: GardenCamera,
+                                   stage: Int, unit: CGFloat, style: GardenStyle, time: Double) {
+        let parallax: CGFloat = 1.0, cell: CGFloat = 300
+        let patchesPerCell = [1, 1, 2, 2, 3, 3, 4][min(stage, 6)]   // few, intentional groupings
+        let perPatch       = [8, 14, 22, 30, 40, 52, 66][min(stage, 6)]
+        let patchRadius    = [50, 64, 78, 92, 108, 124, 140][min(stage, 6)]
+        let varieties = max(2, min(GardenPalette.flowerVarieties.count, stage + 2))
         let (minX, maxX) = camera.visibleWorldX(parallax: parallax, size: size, margin: cell)
 
-        enum Kind { case flower, grass, rock }
-        struct Item { let p: CGPoint; let depth: CGFloat; let s: CGFloat; let color: Int; let phase: Double; let kind: Kind }
-        var items: [Item] = []
+        struct Flower { let p: CGPoint; let depth: CGFloat; let s: CGFloat; let color: Int; let phase: Double }
+        var flowers: [Flower] = []
+
         for c in Int(floor(minX / cell))...Int(ceil(maxX / cell)) {
             var rng = SeededGenerator(seed: gardenCellSeed(worldSeed, c, 0xF10E))
-            for i in 0..<density {
-                let wx = CGFloat(c) * cell + CGFloat(rng.double(in: 0, Double(cell)))
-                let depth = CGFloat(rng.double(in: 0, 1))
-                // Use depth to pick a z-layer and query the rolling 3D terrain height
-                let wz = 1 + depth * CGFloat(22) * vSizeW
-                let elev = groundElevation(worldX: wx, worldZ: wz)
-                let wy = elev + wz * 0.45
-                let p0 = camera.project(CGPoint(x: wx, y: wy), parallax: parallax, size: size)
-                let p = CGPoint(x: snap(p0.x, px), y: snap(p0.y, px))
-                if p.x < -40 || p.x > size.width + 40 || p.y < -40 || p.y > size.height + 40 { continue }
-                let kind: Kind = (i % 13 == 0) ? .rock : (i % 5 == 0 ? .grass : .flower)
-                items.append(Item(p: p, depth: depth, s: max(px, unit * (0.6 + depth * 1.5)),
-                                  color: Int(rng.next() % UInt64(varieties)), phase: rng.double(in: 0, 6.28), kind: kind))
+            for _ in 0..<patchesPerCell {
+                let cx = CGFloat(c) * cell + CGFloat(rng.double(in: 0, Double(cell)))
+                let cDepth = CGFloat(rng.double(in: 0, 1))
+                let cy = 40 + cDepth * 300
+                let dominant = Int(rng.next() % UInt64(varieties))
+                let rx = CGFloat(patchRadius) * CGFloat(rng.double(in: 0.7, 1.1))
+                let ry = CGFloat(patchRadius) * 0.45
+                for _ in 0..<perPatch {
+                    // centre-biased offset → dense middle, sparse edges (nature grows in clumps)
+                    let b1: Double = (rng.double(in: -1, 1) + rng.double(in: -1, 1)) / 2
+                    let b2: Double = (rng.double(in: -1, 1) + rng.double(in: -1, 1)) / 2
+                    let wx: CGFloat = cx + CGFloat(b1) * rx
+                    let wy: CGFloat = max(18, cy + CGFloat(b2) * ry)
+                    let p = camera.project(CGPoint(x: wx, y: wy), parallax: parallax, size: size)
+                    if p.x < -40 || p.x > size.width + 40 || p.y < -40 || p.y > size.height + 40 { continue }
+                    let depth: CGFloat = max(0, min(1, (wy - 18) / 300))
+                    let s: CGFloat = max(2, unit * (0.7 + depth * 1.6))
+                    let color = rng.double(in: 0, 1) < 0.82 ? dominant : Int(rng.next() % UInt64(varieties))
+                    flowers.append(Flower(p: p, depth: depth, s: s, color: color, phase: rng.double(in: 0, 6.28)))
+                }
             }
         }
-        for it in items.sorted(by: { $0.depth < $1.depth }) {
-            let sway = swayOffset(time: time, phase: it.phase, style: style) * it.s * 0.5 * (0.4 + it.depth)
-            switch it.kind {
-            case .rock:   drawRock(ctx, base: it.p, s: it.s, px: px)
-            case .grass:  drawGrass(ctx, base: it.p, s: it.s, sway: sway, px: px)
-            case .flower:
-                let lean = CGFloat(style.droopDegrees) * 0.10 * it.s
-                drawFlower(ctx, base: it.p, s: it.s, petal: GardenPalette.flowerVarieties[it.color], sway: sway + lean, px: px)
-            }
+        for f in flowers.sorted(by: { $0.depth < $1.depth }) {
+            let lean = CGFloat(style.droopDegrees) * 0.10 * f.s
+            let sway = swayOffset(time: time, phase: f.phase, style: style) * f.s * 0.5 * (0.4 + f.depth)
+            drawFlower(ctx, base: f.p, s: f.s, petal: GardenPalette.flowerVarieties[f.color], sway: sway + lean)
         }
     }
 
     private func drawCreatures(_ ctx: GraphicsContext, _ size: CGSize, _ camera: GardenCamera,
                                stage: Int, unit: CGFloat, style: GardenStyle, time: Double) {
-        if stage >= 2 && style.ambientOpacity > 0.4 {
-            let parallax: CGFloat = 1.0, cell: CGFloat = 500
+        if stage >= 3 && style.ambientOpacity > 0.4 {
+            let parallax: CGFloat = 1.0, cell: CGFloat = 650
             let (minX, maxX) = camera.visibleWorldX(parallax: parallax, size: size, margin: cell)
             for c in Int(floor(minX / cell))...Int(ceil(maxX / cell)) {
                 var rng = SeededGenerator(seed: gardenCellSeed(worldSeed, c, 0xB077))
@@ -599,7 +366,7 @@ struct GardenSceneView: View {
                     let baseX = CGFloat(c) * cell + CGFloat(rng.double(in: 0, Double(cell)))
                     let ph = rng.double(in: 0, 6.28)
                     let wx = baseX + CGFloat(sin(time * 0.4 + ph)) * 40
-                    let wy = 30 + CGFloat(rng.double(in: 0, 140)) + CGFloat(cos(time * 0.6 + ph)) * 18
+                    let wy = 40 + CGFloat(rng.double(in: 0, 130)) + CGFloat(cos(time * 0.6 + ph)) * 16
                     let p = camera.project(CGPoint(x: wx, y: wy), parallax: parallax, size: size)
                     if p.x < -20 || p.x > size.width + 20 { continue }
                     drawButterfly(ctx, at: p, s: unit * 0.8, flap: sin(time * 6 + ph),
@@ -610,13 +377,12 @@ struct GardenSceneView: View {
         drawParticles(ctx, size, camera, style: style, time: time)
     }
 
-    // Soft vignette for depth/focus.
     private func drawAtmosphere(_ ctx: GraphicsContext, _ size: CGSize) {
         let c = CGPoint(x: size.width / 2, y: size.height / 2)
         let r = max(size.width, size.height) * 0.75
         ctx.fill(Path(CGRect(origin: .zero, size: size)),
-                 with: .radialGradient(Gradient(stops: [.init(color: .clear, location: 0.6),
-                                                         .init(color: .black.opacity(0.22), location: 1)]),
+                 with: .radialGradient(Gradient(stops: [.init(color: .clear, location: 0.62),
+                                                         .init(color: .black.opacity(0.20), location: 1)]),
                                        center: c, startRadius: 0, endRadius: r))
     }
 
@@ -625,184 +391,38 @@ struct GardenSceneView: View {
         return CGFloat(sin(time * style.swaySpeed * 2 * .pi + phase)) * CGFloat(style.swayDegrees)
     }
 
-    // MARK: Sprite primitives (screen-space, pixel-snapped)
+    // MARK: Sprite primitives
 
-    private func cell(_ ctx: GraphicsContext, _ x: CGFloat, _ y: CGFloat, _ w: CGFloat, _ h: CGFloat, _ rgb: RGB, _ alpha: Double = 1) {
-        ctx.fill(Path(CGRect(x: x, y: y, width: w, height: h)), with: .color(rgb.color.opacity(alpha)))
-    }
-
-    private func drawFlower(_ ctx: GraphicsContext, base: CGPoint, s: CGFloat, petal: RGB, sway: CGFloat, px: CGFloat) {
-        let shadowW = snap(s * 1.5, px)
-        let shadowH = snap(s * 0.4, px)
-        ctx.fill(Path(CGRect(x: snap(base.x - shadowW/2, px), y: snap(base.y - shadowH/2, px), width: shadowW, height: shadowH)),
-                 with: .color(.black.opacity(0.12)))
-                 
-        let headX = base.x + sway
-        let headY = base.y - 3.2 * s
-        let stem = GardenPalette.stemLight
-        let stemDark = GardenPalette.stemDark
-        
-        let stemW = max(px, snap(s * 0.3, px))
+    private func drawFlower(_ ctx: GraphicsContext, base: CGPoint, s: CGFloat, petal: RGB, sway: CGFloat) {
+        // grounding shadow
+        ctx.fill(Path(ellipseIn: CGRect(x: base.x - s * 0.9, y: base.y - s * 0.22, width: s * 1.8, height: s * 0.45)),
+                 with: .color(.black.opacity(0.10)))
+        let headX = base.x + sway, headY = base.y - 3 * s
+        let stem = GardenPalette.stemLight.color
         for i in 0...3 {
             let t = CGFloat(i) / 3
-            let sx = snap(base.x + (headX - base.x) * t, px)
-            let sy = snap(base.y + (headY - base.y) * t, px)
-            ctx.fill(Path(CGRect(x: sx - stemW/2, y: sy, width: stemW, height: s)), with: .color((i % 2 == 0 ? stem : stemDark).color))
+            ctx.fill(Path(CGRect(x: base.x + (headX - base.x) * t - s * 0.5, y: base.y + (headY - base.y) * t,
+                                 width: s, height: s)), with: .color(stem))
         }
-        
-        let petalW = max(px, snap(s * 0.6, px))
-        let petalH = max(px, snap(s * 0.6, px))
-        let petalD = petalW * 0.5
-        
-        let centerColor = GardenPalette.flowerCenter
-        let centerShadow = centerColor.lerp(to: GardenPalette.soilDark, 0.25)
-        let petalShadow = petal.lerp(to: GardenPalette.soilDark, 0.22)
-        
-        let parts = [
-            (0.0, -0.8, -0.5, petal),
-            (-0.8, 0.0, -0.5, petal),
-            (0.8, 0.0, -0.5, petal),
-            (0.0, 0.0, 0.0, centerColor),
-            (-0.6, 0.6, 0.5, petal),
-            (0.6, 0.6, 0.5, petal),
-            (0.0, 0.8, 0.5, petal)
-        ]
-        
-        for (dx, dy, dz, col) in parts {
-            let px_coord = snap(headX + dx * s * 0.8, px)
-            let py_coord = snap(headY + dy * s * 0.8 + dz * s * 0.3, px)
-            
-            let baseColor = col
-            let shadowColor = col == centerColor ? centerShadow : petalShadow
-            
-            let topColor = baseColor.lerp(to: GardenPalette.petalWhite, 0.15)
-            let leftColor = baseColor
-            let rightColor = shadowColor
-            
-            // Top face
-            ctx.fill(Path(CGRect(x: px_coord - petalW/2, y: py_coord - petalD, width: petalW, height: petalD)), with: .color(topColor.color))
-            // Left face
-            ctx.fill(Path(CGRect(x: px_coord - petalW/2, y: py_coord, width: petalW/2, height: petalH)), with: .color(leftColor.color))
-            // Right face
-            ctx.fill(Path(CGRect(x: px_coord, y: py_coord, width: petalW/2, height: petalH)), with: .color(rightColor.color))
-        }
+        let hi = petal.lerp(to: GardenPalette.petalWhite, 0.35)
+        ctx.fill(Path(CGRect(x: headX - s * 0.5, y: headY - 1.5 * s, width: s, height: s)), with: .color(hi.color))
+        ctx.fill(Path(CGRect(x: headX - s * 0.5, y: headY + 0.5 * s, width: s, height: s)), with: .color(petal.color))
+        ctx.fill(Path(CGRect(x: headX - 1.5 * s, y: headY - 0.5 * s, width: s, height: s)), with: .color(hi.color))
+        ctx.fill(Path(CGRect(x: headX + 0.5 * s, y: headY - 0.5 * s, width: s, height: s)), with: .color(petal.color))
+        ctx.fill(Path(CGRect(x: headX - 0.5 * s, y: headY - 0.5 * s, width: s, height: s)),
+                 with: .color(GardenPalette.flowerCenter.color))
     }
 
-    private func drawGrass(_ ctx: GraphicsContext, base: CGPoint, s: CGFloat, sway: CGFloat, px: CGFloat) {
-        let dark = GardenPalette.leafDark
-        let mid = GardenPalette.leafMid
-        let light = GardenPalette.leafLight
-        
-        let w = max(px, snap(s * 0.35, px))
-        let h = max(px, snap(s * 1.5, px))
-        let d = w * 0.5
-        
-        let blades = [
-            (-s * 0.8, -s * 0.2, dark),
-            (0.0, 0.0, mid),
-            (s * 0.8, -s * 0.4, light)
-        ]
-        
-        for (dx, dy, color) in blades {
-            let bx = snap(base.x + dx + sway * 0.3, px)
-            let by = snap(base.y + dy - h, px)
-            
-            let baseColor = color
-            let shadowColor = color.lerp(to: GardenPalette.soilDark, 0.25)
-            let topColor = color.lerp(to: GardenPalette.petalYellow, 0.08)
-            
-            // Draw top face
-            ctx.fill(Path(CGRect(x: bx - w/2, y: by - d, width: w, height: d)), with: .color(topColor.color))
-            // Draw left face
-            ctx.fill(Path(CGRect(x: bx - w/2, y: by, width: w/2, height: h)), with: .color(baseColor.color))
-            // Draw right face
-            ctx.fill(Path(CGRect(x: bx, y: by, width: w/2, height: h)), with: .color(shadowColor.color))
-        }
-    }
-
-    private func drawRock(_ ctx: GraphicsContext, base: CGPoint, s: CGFloat, px: CGFloat) {
-        let shadowW = snap(s * 1.8, px)
-        let shadowH = snap(s * 0.5, px)
-        ctx.fill(Path(CGRect(x: snap(base.x - shadowW/2, px), y: snap(base.y - shadowH/2, px), width: shadowW, height: shadowH)),
-                 with: .color(.black.opacity(0.12)))
-                 
-        let w = max(px, snap(s * 1.4, px))
-        let h = max(px, snap(s * 1.0, px))
-        let d = w * 0.5
-        
-        let sx = snap(base.x, px)
-        let sy = snap(base.y - h * 0.5, px)
-        
-        let rock = GardenPalette.mountainRock
-        let rockShadow = rock.lerp(to: GardenPalette.soilDark, 0.25)
-        let snow = GardenPalette.mountainSnow
-        
-        let topColor = snow.lerp(to: rock, 0.15)
-        let leftColor = rock
-        let rightColor = rockShadow
-        
-        // Draw top face
-        ctx.fill(Path(CGRect(x: sx - w/2, y: sy - d, width: w, height: d)), with: .color(topColor.color))
-        // Draw left face
-        ctx.fill(Path(CGRect(x: sx - w/2, y: sy, width: w/2, height: h)), with: .color(leftColor.color))
-        // Draw right face
-        ctx.fill(Path(CGRect(x: sx, y: sy, width: w/2, height: h)), with: .color(rightColor.color))
-    }
-
-    private func drawTree(_ ctx: GraphicsContext, base: CGPoint, unit: CGFloat, sway: CGFloat, px: CGFloat) {
-        let shadowW = snap(unit * 2.6, px)
-        let shadowH = snap(unit * 0.5, px)
-        ctx.fill(Path(CGRect(x: snap(base.x - shadowW/2, px), y: snap(base.y - shadowH/2, px), width: shadowW, height: shadowH)),
-                 with: .color(.black.opacity(0.15)))
-        
-        let trunkW = max(px, snap(unit * 0.8, px))
-        let trunkH = max(px, snap(unit * 2.2, px))
-        
-        // Trunk Shadow (right) and Highlight (left)
-        ctx.fill(Path(CGRect(x: snap(base.x - trunkW/2, px), y: snap(base.y - trunkH, px), width: trunkW, height: trunkH)),
+    private func drawTree(_ ctx: GraphicsContext, base: CGPoint, unit: CGFloat, sway: CGFloat) {
+        ctx.fill(Path(ellipseIn: CGRect(x: base.x - unit * 1.3, y: base.y - unit * 0.25, width: unit * 2.6, height: unit * 0.6)),
+                 with: .color(.black.opacity(0.10)))
+        let trunkW = unit * 0.7, trunkH = unit * 2.0
+        ctx.fill(Path(CGRect(x: base.x - trunkW / 2, y: base.y - trunkH, width: trunkW, height: trunkH)),
                  with: .color(GardenPalette.soilDark.color))
-        ctx.fill(Path(CGRect(x: snap(base.x - trunkW/2, px), y: snap(base.y - trunkH, px), width: trunkW/2, height: trunkH)),
-                 with: .color(GardenPalette.soilLight.color))
-        
-        let cx = base.x + sway
-        let cy = base.y - trunkH - unit * 1.0
-        let voxelSize = max(px, snap(unit * 0.65, px))
-        
-        // Voxel canopy blocks (dx, dy, dz)
-        let leafBlocks: [(CGFloat, CGFloat, CGFloat)] = [
-            (-1.5, 0.5, -1.0), (0.0, 0.8, -1.0), (1.5, 0.5, -1.0),
-            (-1.0, 0.0, -0.5), (1.0, 0.0, -0.5),
-            (-1.2, -0.5, 0.0), (0.0, -0.2, 0.0), (1.2, -0.5, 0.0),
-            (-0.5, 0.5, 0.0), (0.5, 0.5, 0.0),
-            (-0.8, -1.2, 1.0), (0.0, -1.4, 1.0), (0.8, -1.2, 1.0),
-            (-0.4, -0.8, 1.0), (0.4, -0.8, 1.0), (0.0, -0.6, 1.0)
-        ]
-        
-        for (dx, dy, dz) in leafBlocks {
-            let wx = cx + dx * voxelSize
-            let wy = cy + dy * voxelSize
-            let screenZ = dz * voxelSize * 0.45
-            
-            let px_coord = snap(wx, px)
-            let py_coord = snap(wy + screenZ, px)
-            let w = voxelSize
-            let h = voxelSize
-            let d = voxelSize * 0.45
-            
-            let baseColor = dz < 0 ? GardenPalette.leafDark : (dz > 0.5 ? GardenPalette.leafLight : GardenPalette.leafMid)
-            let shadowColor = baseColor.lerp(to: GardenPalette.soilDark, 0.25)
-            
-            let topColor = baseColor.lerp(to: GardenPalette.petalYellow, 0.08)
-            let leftColor = baseColor
-            let rightColor = shadowColor
-            
-            // Top face
-            ctx.fill(Path(CGRect(x: px_coord - w/2, y: py_coord - d, width: w, height: d)), with: .color(topColor.color))
-            // Left face
-            ctx.fill(Path(CGRect(x: px_coord - w/2, y: py_coord, width: w/2, height: h)), with: .color(leftColor.color))
-            // Right face
-            ctx.fill(Path(CGRect(x: px_coord, y: py_coord, width: w/2, height: h)), with: .color(rightColor.color))
-        }
+        let cx = base.x + sway, cy = base.y - trunkH - unit, r = unit * 1.6
+        let canopy = GardenPalette.leafMid.lerp(to: GardenPalette.skyBottom, 0.12)
+        ctx.fill(Path(ellipseIn: CGRect(x: cx - r, y: cy - r, width: r * 2, height: r * 2)), with: .color(GardenPalette.leafDark.color))
+        ctx.fill(Path(ellipseIn: CGRect(x: cx - r * 0.8, y: cy - r * 1.0, width: r * 1.6, height: r * 1.6)), with: .color(canopy.color))
     }
 
     private func drawButterfly(_ ctx: GraphicsContext, at p: CGPoint, s: CGFloat, flap: Double, color: RGB) {
@@ -816,19 +436,19 @@ struct GardenSceneView: View {
         guard style.ambientOpacity > 0.01 else { return }
         var rng = SeededGenerator(seed: snapshot.renderSeed)
         let horizon = camera.horizonScreenY(size: size)
-        let bandTop = horizon * 0.7, bandBottom = horizon + (size.height - horizon) * 0.55
+        let bandTop = horizon * 0.75, bandBottom = horizon + (size.height - horizon) * 0.5
         for _ in 0..<style.fireflyCount {
-            let bx = rng.double(in: 0.1, 0.9) * Double(size.width)
+            let bx = rng.double(in: 0.12, 0.88) * Double(size.width)
             let by = Double(bandTop) + rng.double(in: 0, 1) * Double(bandBottom - bandTop)
             let phase = rng.double(in: 0, 2 * .pi)
-            let x = bx + sin(time * 0.6 + phase) * Double(size.width) * 0.04
-            let y = by + cos(time * 0.45 + phase) * Double(size.height) * 0.03
-            let alpha = (0.55 + 0.45 * sin(time * 1.3 + phase)) * style.ambientOpacity
-            let glowR = Double(size.height) * 0.045
+            let x = bx + sin(time * 0.6 + phase) * Double(size.width) * 0.035
+            let y = by + cos(time * 0.45 + phase) * Double(size.height) * 0.025
+            let alpha = (0.5 + 0.45 * sin(time * 1.3 + phase)) * style.ambientOpacity
+            let glowR = Double(size.height) * 0.04
             ctx.fill(Path(ellipseIn: CGRect(x: x - glowR, y: y - glowR, width: glowR * 2, height: glowR * 2)),
                      with: .radialGradient(Gradient(colors: [GardenPalette.firefly.color.opacity(0.5 * alpha), .clear]),
                                            center: CGPoint(x: x, y: y), startRadius: 0, endRadius: glowR))
-            let coreR = max(1.5, Double(size.height) * 0.011)
+            let coreR = max(1.5, Double(size.height) * 0.01)
             ctx.fill(Path(ellipseIn: CGRect(x: x - coreR, y: y - coreR, width: coreR * 2, height: coreR * 2)),
                      with: .color(GardenPalette.firefly.color.opacity(alpha)))
         }
