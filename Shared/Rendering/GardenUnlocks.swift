@@ -1,47 +1,41 @@
 import Foundation
 
-/// What the world contains right now — derived purely from cumulative entries. Progression comes
-/// from **unlocking new kinds of things**, not from cranking up density: a flower, then a patch,
-/// then a bush, a tree, butterflies, a path, fireflies, a fence, a meadow… Each threshold adds
-/// something visibly new. Monotonic (entries only grow), so the garden never loses anything.
+/// What the world contains right now — derived purely from cumulative entries. Progression is a set
+/// of **discrete, obvious milestones**, not density: a single flower, then a patch, a second patch, a
+/// tree, the lake, a bridge, butterflies, fireflies. Each step makes the user think "something new
+/// appeared." Monotonic (entries only grow), so nothing is ever lost.
+///
+/// Milestones:
+///   1 → 1 flower · 5 → 1st patch · 10 → 2nd patch · 20 → 1st tree · 30 → lake · 45 → garden decoration
+///   50 → bridge · 65 → 2nd tree · 75 → butterflies · 100 → fireflies · (more patches/trees beyond)
 struct GardenUnlocks: Equatable {
-    var flowers: Int          // discrete flowers dotted near the home (the very first days)
-    var flowerPatches: Int    // clustered beds that appear from day ~4
-    var bushes: Int
+    var singleFlowers: Int    // individual flowers, only before the first patch (entries 1–4)
+    var flowerPatches: Int    // big, obvious flower beds
     var trees: Int
     var butterflies: Int
     var fireflies: Int
-    var stones: Int
-    var hasPath: Bool
-    var hasFence: Bool
-    var hasSign: Bool
-    var hasMeadow: Bool       // large flower fields
-    var flourishing: Bool
+    var hasLake: Bool
+    var hasBridge: Bool
+    var hasGardenDecor: Bool  // a birdbath in the garden
 
     static func derive(totalEntries n: Int) -> GardenUnlocks {
-        func tier(_ steps: [(Int, Int)]) -> Int {          // first threshold > n wins the previous value
+        func tier(_ steps: [(Int, Int)]) -> Int {
             var v = 0
             for (threshold, value) in steps where n >= threshold { v = value }
             return v
         }
         return GardenUnlocks(
-            // Days 0–3: one new flower each day. Then discrete flowers settle and patches take over.
-            flowers:       n <= 3 ? max(1, min(4, n + 1)) : 3,
-            flowerPatches: tier([(4, 1), (8, 2), (16, 3), (31, 4), (61, 6), (101, 8)]),
-            bushes:        tier([(4, 1), (16, 2), (61, 3)]),
-            trees:         tier([(16, 1), (31, 2), (61, 3), (101, 4)]),
-            butterflies:   tier([(8, 1), (16, 2), (31, 3), (101, 4)]),
-            fireflies:     tier([(31, 3), (61, 5), (101, 7)]),
-            stones:        tier([(31, 1), (61, 2)]),
-            hasPath:       n >= 16,
-            hasFence:      n >= 31,
-            hasSign:       n >= 31,
-            hasMeadow:     n >= 61,
-            flourishing:   n >= 101)
+            singleFlowers: n < 5 ? max(0, n) : 0,
+            flowerPatches: tier([(5, 1), (10, 2), (40, 3), (70, 4), (120, 5), (200, 6)]),
+            trees:         tier([(20, 1), (65, 2), (120, 3)]),
+            butterflies:   tier([(75, 2), (150, 3)]),
+            fireflies:     tier([(100, 4), (200, 6)]),
+            hasLake:       n >= 30,
+            hasBridge:     n >= 50,
+            hasGardenDecor: n >= 45)
     }
 }
 
 extension GardenSnapshot {
-    /// What's unlocked in this world right now.
     var unlocks: GardenUnlocks { .derive(totalEntries: totalEntries) }
 }

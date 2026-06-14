@@ -10,12 +10,16 @@ struct AppPreferences: Codable, Equatable {
     var hapticsEnabled: Bool
     /// The home the user chose at onboarding — the permanent center of their world.
     var homeStyle: HomeStyle
+    /// The companion sharing the garden. Purely warm — never a responsibility.
+    var petType: PetType
 
-    init(hasCompletedOnboarding: Bool, soundEnabled: Bool, hapticsEnabled: Bool, homeStyle: HomeStyle = .cottage) {
+    init(hasCompletedOnboarding: Bool, soundEnabled: Bool, hapticsEnabled: Bool,
+         homeStyle: HomeStyle = .cottage, petType: PetType = .cat) {
         self.hasCompletedOnboarding = hasCompletedOnboarding
         self.soundEnabled = soundEnabled
         self.hapticsEnabled = hapticsEnabled
         self.homeStyle = homeStyle
+        self.petType = petType
     }
 
     static let `default` = AppPreferences(hasCompletedOnboarding: false, soundEnabled: false, hapticsEnabled: true)
@@ -26,6 +30,7 @@ struct AppPreferences: Codable, Equatable {
         soundEnabled           = try c.decodeIfPresent(Bool.self, forKey: .soundEnabled) ?? false
         hapticsEnabled         = try c.decodeIfPresent(Bool.self, forKey: .hapticsEnabled) ?? true
         homeStyle              = try c.decodeIfPresent(HomeStyle.self, forKey: .homeStyle) ?? .cottage
+        petType                = try c.decodeIfPresent(PetType.self, forKey: .petType) ?? .cat
     }
 }
 
