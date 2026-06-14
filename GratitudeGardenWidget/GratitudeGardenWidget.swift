@@ -5,6 +5,7 @@ import SwiftUI
 struct GardenEntry: TimelineEntry {
     let date: Date
     let snapshot: GardenSnapshot
+    var homeStyle: HomeStyle = .cottage
 }
 
 /// Reads the shared `GardenState` and projects a timeline that **ages the garden over time** via the
@@ -13,21 +14,29 @@ struct GardenEntry: TimelineEntry {
 /// thriving→drooping→dormant decay on its own.
 struct GardenProvider: TimelineProvider {
     private let store: GardenStore
+    private let preferences: AppPreferencesStore
 
-    init(store: GardenStore = FileGardenStore()) { self.store = store }
+    init(store: GardenStore = FileGardenStore(), preferences: AppPreferencesStore = FileAppPreferencesStore()) {
+        self.store = store
+        self.preferences = preferences
+    }
+
+    private var homeStyle: HomeStyle { preferences.load().homeStyle }
 
     func placeholder(in context: Context) -> GardenEntry {
-        GardenEntry(date: Date(), snapshot: GardenRules.snapshot(state: .empty, now: Date()))
+        GardenEntry(date: Date(), snapshot: GardenRules.snapshot(state: .empty, now: Date()), homeStyle: homeStyle)
     }
 
     func getSnapshot(in context: Context, completion: @escaping (GardenEntry) -> Void) {
         completion(GardenEntry(date: Date(),
-                               snapshot: GardenRules.snapshot(state: store.loadGarden(), now: Date())))
+                               snapshot: GardenRules.snapshot(state: store.loadGarden(), now: Date()),
+                               homeStyle: homeStyle))
     }
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<GardenEntry>) -> Void) {
         let plan = GardenTimelinePlanner.plan(state: store.loadGarden(), now: Date())
-        let entries = plan.moments.map { GardenEntry(date: $0.date, snapshot: $0.snapshot) }
+        let home = homeStyle
+        let entries = plan.moments.map { GardenEntry(date: $0.date, snapshot: $0.snapshot, homeStyle: home) }
         // `.atEnd`: once the projected arc (which already covers the full decay to dormancy) is done,
         // ask the system to rebuild. Day-boundary entries mean we never wake more than ~once a day.
         completion(Timeline(entries: entries, policy: .atEnd))
@@ -46,7 +55,7 @@ struct GratitudeGardenWidgetEntryView: View {
         overlay
             .containerBackground(for: .widget) {
                 // Same world renderer; static + fixed camera (widgets don't animate or accept gestures).
-                GardenSceneView(snapshot: snapshot, animated: false, interactive: false)
+                GardenSceneView(snapshot: snapshot, homeStyle: entry.homeStyle, animated: false, interactive: false)
             }
             .widgetURL(GardenDeepLink.composeURL)
     }

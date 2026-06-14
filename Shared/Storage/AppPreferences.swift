@@ -8,11 +8,14 @@ struct AppPreferences: Codable, Equatable {
     var soundEnabled: Bool
     /// Subtle haptics on by default; can be turned off.
     var hapticsEnabled: Bool
+    /// The home the user chose at onboarding — the permanent center of their world.
+    var homeStyle: HomeStyle
 
-    init(hasCompletedOnboarding: Bool, soundEnabled: Bool, hapticsEnabled: Bool) {
+    init(hasCompletedOnboarding: Bool, soundEnabled: Bool, hapticsEnabled: Bool, homeStyle: HomeStyle = .cottage) {
         self.hasCompletedOnboarding = hasCompletedOnboarding
         self.soundEnabled = soundEnabled
         self.hapticsEnabled = hapticsEnabled
+        self.homeStyle = homeStyle
     }
 
     static let `default` = AppPreferences(hasCompletedOnboarding: false, soundEnabled: false, hapticsEnabled: true)
@@ -22,6 +25,7 @@ struct AppPreferences: Codable, Equatable {
         hasCompletedOnboarding = try c.decodeIfPresent(Bool.self, forKey: .hasCompletedOnboarding) ?? false
         soundEnabled           = try c.decodeIfPresent(Bool.self, forKey: .soundEnabled) ?? false
         hapticsEnabled         = try c.decodeIfPresent(Bool.self, forKey: .hapticsEnabled) ?? true
+        homeStyle              = try c.decodeIfPresent(HomeStyle.self, forKey: .homeStyle) ?? .cottage
     }
 }
 

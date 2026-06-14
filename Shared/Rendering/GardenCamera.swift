@@ -13,19 +13,21 @@ struct GardenCamera: Equatable {
     /// Scale factor. 1 = default; >1 zoom in (bigger), <1 zoom out (more world visible).
     var zoom: CGFloat
 
-    static let minZoom: CGFloat = 0.6
-    static let maxZoom: CGFloat = 2.6
-    static let `default` = GardenCamera(position: CGPoint(x: 0, y: 60), zoom: 1.0)
+    static let minZoom: CGFloat = 0.85
+    static let maxZoom: CGFloat = 2.2
+    /// Centered on the home, framed so the home + garden fill the screen (intimate, not a vast vista).
+    static let `default` = GardenCamera(position: CGPoint(x: 0, y: 70), zoom: 1.0)
 
     /// Fraction of screen height where the world horizon (y = 0, at camera.y = 0) sits.
-    static let horizonFraction: CGFloat = 0.52
+    static let horizonFraction: CGFloat = 0.48
 
     func clampedZoom() -> CGFloat { min(max(zoom, Self.minZoom), Self.maxZoom) }
 
-    /// Keeps the camera sensible: clamp zoom, and clamp vertical so you can glance up/down a little
-    /// but never lose the horizon. Horizontal is intentionally unbounded (infinite world).
+    /// Keeps the view intimate: small zoom range and a **bounded** pan, so you can look around your
+    /// garden a little but never wander off into empty landscape. The garden stays the focus.
     func clamped() -> GardenCamera {
-        GardenCamera(position: CGPoint(x: position.x, y: min(max(position.y, -120), 200)),
+        GardenCamera(position: CGPoint(x: min(max(position.x, -150), 150),
+                                       y: min(max(position.y, 10), 130)),
                      zoom: clampedZoom())
     }
 

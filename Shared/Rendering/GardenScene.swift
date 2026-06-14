@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Deterministic RNG (SplitMix64) for reproducible, infinite, app/widget-identical world content.
+/// Deterministic RNG (SplitMix64) for reproducible, app/widget-identical placement.
 struct SeededGenerator: RandomNumberGenerator {
     private var state: UInt64
     init(seed: UInt64) { state = seed != 0 ? seed : 0x9E3779B97F4A7C15 }
@@ -16,14 +16,14 @@ struct SeededGenerator: RandomNumberGenerator {
     }
 }
 
-/// The garden as a calm, composed illustration — navigable and full-bleed, drawn through a
-/// `GardenCamera`. Deliberately built for **visual hierarchy**, not detail count:
-///   • Background (muted): clean snow-capped mountain silhouettes + sky.
-///   • Midground (slightly richer): a soft hill band + sparse trees + a path that leads the eye in.
-///   • Foreground (most colorful): flowers grouped into **patches/meadows** — the focal point.
-/// Growth (`worldStage`) expands and enriches the flower fields; vitality (`GardenStyle`) tints.
+/// The garden as a **cozy, home-centered scene** (Stardew / Cozy Grove feel) — not a procedural
+/// landscape. A chosen home sits at the center; the garden grows *outward from it* by **unlocking
+/// new things** (flower → patch → bush → tree → butterfly → path → fence → meadow…), so progression
+/// is obvious. Layered back→front with a clear hierarchy. Plants are still; only butterflies and
+/// fireflies drift. Vitality (`GardenStyle`) tints the whole scene.
 struct GardenSceneView: View {
     let snapshot: GardenSnapshot
+    var homeStyle: HomeStyle = .cottage
     var animated: Bool = true
     var interactive: Bool = true
 
@@ -39,6 +39,9 @@ struct GardenSceneView: View {
     private var frameInterval: Double { 1.0 / 15.0 }
     private var motionEnabled: Bool { animated && !reduceMotion && scenePhase != .background }
     private let revivalDuration: Double = 1.8
+
+    // Home sits here in world space; the garden is composed around it.
+    private let homeBaseY: CGFloat = 92
 
     var body: some View {
         TimelineView(.animation(minimumInterval: frameInterval, paused: !motionEnabled)) { timeline in
@@ -62,7 +65,7 @@ struct GardenSceneView: View {
             isReviving: snapshot.isReviving, lastEntry: snapshot.lastEntryDate)))
     }
 
-    // MARK: Pan + zoom + momentum
+    // MARK: Pan + zoom + momentum (gentle, bounded — see GardenCamera.clamped)
 
     private var explorationGesture: some Gesture {
         let pan = DragGesture(minimumDistance: 1)
@@ -79,7 +82,7 @@ struct GardenSceneView: View {
                 let target = CGPoint(x: start.x - value.predictedEndTranslation.width / camera.zoom,
                                      y: start.y - value.predictedEndTranslation.height / camera.zoom)
                 let settled = GardenCamera(position: target, zoom: camera.zoom).clamped()
-                if motionEnabled { withAnimation(.easeOut(duration: 0.7)) { camera = settled } }
+                if motionEnabled { withAnimation(.easeOut(duration: 0.6)) { camera = settled } }
                 else { camera = settled }
             }
         let zoom = MagnifyGesture()
@@ -105,131 +108,88 @@ struct GardenSceneView: View {
         return GardenStyle.lerp(GardenStyle.preRevival(target: target), target, progress)
     }
 
-    // MARK: - Render (back → front, with a clear value/colour hierarchy)
+    // MARK: - Render (back → front)
 
     private func draw(into ctx: GraphicsContext, size: CGSize, camera: GardenCamera, style: GardenStyle, time: Double) {
         let unit = max(2, size.height / 150) * camera.zoom
-        let stage = snapshot.worldStage.rawValue
-        let horizon = camera.horizonScreenY(size: size)
-
+        let u = unlocks
         drawSky(ctx, size, style)
-        drawSunBloom(ctx, size)
-        drawClouds(ctx, size, camera, time: time)
-        drawMountains(ctx, size, camera, horizon: horizon, style: style)
-        drawHills(ctx, size, camera, horizon: horizon)
-        drawGround(ctx, size, horizon: horizon)
-        drawPath(ctx, size, camera)
-        drawTrees(ctx, size, camera, stage: stage, unit: unit, style: style, time: time)
-        drawFlowerPatches(ctx, size, camera, stage: stage, unit: unit, style: style, time: time)
-        drawCreatures(ctx, size, camera, stage: stage, unit: unit, style: style, time: time)
+        drawSun(ctx, size)
+        drawDistantMountains(ctx, size, camera, style: style)
+        drawHills(ctx, size, camera)
+        drawGround(ctx, size, camera)
+        drawPlot(ctx, size, camera)
+        if u.hasPath { drawPath(ctx, size, camera, unit: unit) }
+        drawProps(ctx, size, camera, unit: unit, unlocks: u)
+        drawCreatures(ctx, size, camera, unit: unit, unlocks: u, style: style, time: time)
         drawAtmosphere(ctx, size)
     }
 
-    private func snap(_ v: CGFloat, _ px: CGFloat) -> CGFloat { (v / px).rounded() * px }
+    private var unlocks: GardenUnlocks { snapshot.unlocks }
 
-    // MARK: Background — sky, sun, clouds (muted, recessive)
+    private func rect(_ ctx: GraphicsContext, _ x: CGFloat, _ y: CGFloat, _ w: CGFloat, _ h: CGFloat, _ c: RGB, _ a: Double = 1) {
+        ctx.fill(Path(CGRect(x: x, y: y, width: w, height: h)), with: .color(c.color.opacity(a)))
+    }
+    private func tri(_ ctx: GraphicsContext, _ a: CGPoint, _ b: CGPoint, _ c: CGPoint, _ col: RGB) {
+        var p = Path(); p.move(to: a); p.addLine(to: b); p.addLine(to: c); p.closeSubpath()
+        ctx.fill(p, with: .color(col.color))
+    }
+
+    // MARK: Background
 
     private func drawSky(_ ctx: GraphicsContext, _ size: CGSize, _ style: GardenStyle) {
-        let warmHorizon = style.skyBottom.lerp(to: GardenPalette.petalYellow, 0.16)
+        let warm = style.skyBottom.lerp(to: GardenPalette.petalYellow, 0.14)
         ctx.fill(Path(CGRect(origin: .zero, size: size)),
                  with: .linearGradient(Gradient(stops: [
                     .init(color: style.skyTop.color, location: 0),
-                    .init(color: style.skyTop.lerp(to: style.skyBottom, 0.55).color, location: 0.45),
-                    .init(color: warmHorizon.color, location: 0.72)]),
-                                       startPoint: .zero, endPoint: CGPoint(x: 0, y: size.height * 0.6)))
+                    .init(color: style.skyTop.lerp(to: style.skyBottom, 0.6).color, location: 0.5),
+                    .init(color: warm.color, location: 0.8)]),
+                                       startPoint: .zero, endPoint: CGPoint(x: 0, y: size.height * 0.55)))
     }
 
-    private func drawSunBloom(_ ctx: GraphicsContext, _ size: CGSize) {
-        let c = CGPoint(x: size.width * 0.28, y: size.height * 0.16)
-        let r = size.height * 0.5
+    private func drawSun(_ ctx: GraphicsContext, _ size: CGSize) {
+        let c = CGPoint(x: size.width * 0.74, y: size.height * 0.14)
+        let r = size.height * 0.34
         ctx.fill(Path(ellipseIn: CGRect(x: c.x - r, y: c.y - r, width: r * 2, height: r * 2)),
-                 with: .radialGradient(Gradient(colors: [GardenPalette.petalWhite.color.opacity(0.75),
-                                                         GardenPalette.petalYellow.color.opacity(0.2), .clear]),
+                 with: .radialGradient(Gradient(colors: [GardenPalette.petalWhite.color.opacity(0.7),
+                                                         GardenPalette.petalYellow.color.opacity(0.18), .clear]),
                                        center: c, startRadius: 0, endRadius: r))
-        let core = size.height * 0.04
-        ctx.fill(Path(ellipseIn: CGRect(x: c.x - core, y: c.y - core, width: core * 2, height: core * 2)),
-                 with: .color(GardenPalette.petalWhite.color.opacity(0.8)))
     }
 
-    /// A few soft, clean clouds — calm, low-contrast, far back.
-    private func drawClouds(_ ctx: GraphicsContext, _ size: CGSize, _ camera: GardenCamera, time: Double) {
-        let parallax: CGFloat = 0.12, cell: CGFloat = 900
-        let (minX, maxX) = camera.visibleWorldX(parallax: parallax, size: size, margin: cell)
-        for c in Int(floor(minX / cell))...Int(ceil(maxX / cell)) {
-            var rng = SeededGenerator(seed: gardenCellSeed(worldSeed, c, 0xC10D))
-            let wx = CGFloat(c) * cell + CGFloat(rng.double(in: 0, Double(cell)))
-            let wy = CGFloat(rng.double(in: -360, -220)) + CGFloat(sin(time * 0.04 + rng.double(in: 0, 6)) * 5)
-            let p = camera.project(CGPoint(x: wx, y: wy), parallax: parallax, size: size)
-            let r: CGFloat = size.height * 0.045 * camera.zoom
-            let puffs: [(CGFloat, CGFloat, CGFloat)] = [(-1.3, 0.1, 1.0), (0.0, -0.35, 1.25), (1.3, 0.1, 0.95)]
-            let cloudColor = GardenPalette.cloud.color.opacity(0.7)
-            for puff in puffs {
-                let x: CGFloat = p.x + puff.0 * r
-                let y: CGFloat = p.y + puff.1 * r
-                let w: CGFloat = r * 2 * puff.2
-                let h: CGFloat = r * 1.25 * puff.2
-                ctx.fill(Path(ellipseIn: CGRect(x: x, y: y, width: w, height: h)), with: .color(cloudColor))
-            }
-        }
-    }
-
-    // MARK: Background — mountains (clean silhouettes, strong layering, atmospheric haze)
-
-    private func drawMountains(_ ctx: GraphicsContext, _ size: CGSize, _ camera: GardenCamera, horizon: CGFloat, style: GardenStyle) {
-        // Far → near: each range darker/closer and a touch more saturated. Heavily hazed so they
-        // recede behind the flowers and never compete with the foreground.
-        drawRange(ctx, size, camera, horizon: horizon, parallax: 0.18, peakFrac: 0.34, phase: 1.1,
-                  haze: 0.74, snowAt: 0.62, sky: style.skyTop)
-        drawRange(ctx, size, camera, horizon: horizon, parallax: 0.30, peakFrac: 0.46, phase: 3.8,
-                  haze: 0.52, snowAt: 0.50, sky: style.skyTop)
-        drawRange(ctx, size, camera, horizon: horizon, parallax: 0.44, peakFrac: 0.58, phase: 6.2,
-                  haze: 0.34, snowAt: 0.46, sky: style.skyTop)
-    }
-
-    private func drawRange(_ ctx: GraphicsContext, _ size: CGSize, _ camera: GardenCamera, horizon: CGFloat,
-                           parallax: CGFloat, peakFrac: CGFloat, phase: Double, haze: Double, snowAt: CGFloat, sky: RGB) {
-        let rock = GardenPalette.mountainRock.lerp(to: sky, haze)
-        let snow = GardenPalette.mountainSnow.lerp(to: sky, haze * 0.5)
-        let peakWorld = size.height * peakFrac
-        let step: CGFloat = 5
-
-        func topY(_ sx: CGFloat) -> CGFloat {
-            let worldX = (sx - size.width / 2) / camera.zoom + camera.position.x * parallax
-            let n = sin(Double(worldX) * 0.0016 + phase) * 0.6 + sin(Double(worldX) * 0.0041 + phase * 1.9) * 0.4
-            let h = peakWorld * CGFloat(0.5 + 0.42 * n)
-            return camera.project(CGPoint(x: worldX, y: -h), parallax: parallax, size: size).y
-        }
-
-        var ridge = Path()
-        ridge.move(to: CGPoint(x: 0, y: horizon))
-        var sx: CGFloat = 0
-        while sx <= size.width { ridge.addLine(to: CGPoint(x: sx, y: topY(sx))); sx += step }
-        ridge.addLine(to: CGPoint(x: size.width, y: horizon))
-        ridge.closeSubpath()
-
-        // Clip to the silhouette, then snow on top, rock below a clean snow line → tidy caps.
-        var mc = ctx
-        mc.clip(to: ridge)
-        let snowLineY = horizon - peakWorld * camera.zoom * snowAt
-        mc.fill(Path(CGRect(origin: .zero, size: size)), with: .color(snow.color))
-        mc.fill(Path(CGRect(x: 0, y: snowLineY, width: size.width, height: max(0, size.height - snowLineY))),
-                with: .color(rock.color))
-    }
-
-    // MARK: Midground — hill band (slightly richer than the mountains, behind the meadow)
-
-    private func drawHills(_ ctx: GraphicsContext, _ size: CGSize, _ camera: GardenCamera, horizon: CGFloat) {
-        let parallax: CGFloat = 0.55, step: CGFloat = 6
-        let color = GardenPalette.hillBack.lerp(to: GardenPalette.skyBottom, 0.18)
+    /// A small, soft, distant range low on the horizon — backdrop only, never dominating.
+    private func drawDistantMountains(_ ctx: GraphicsContext, _ size: CGSize, _ camera: GardenCamera, style: GardenStyle) {
+        let parallax: CGFloat = 0.25, step: CGFloat = 8
+        let peak = size.height * 0.12
+        let color = GardenPalette.mountainRock.lerp(to: style.skyTop, 0.66)
+        let horizon = camera.horizonScreenY(size: size)
         var path = Path()
-        path.move(to: CGPoint(x: 0, y: size.height))
+        path.move(to: CGPoint(x: 0, y: horizon))
         var sx: CGFloat = 0
-        var started = false
         while sx <= size.width {
             let worldX = (sx - size.width / 2) / camera.zoom + camera.position.x * parallax
-            let n = sin(Double(worldX) * 0.0055 + 2.1) * 0.7 + sin(Double(worldX) * 0.013 + 0.5) * 0.3
-            let y = camera.project(CGPoint(x: worldX, y: -28 + CGFloat(n) * 34), parallax: parallax, size: size).y
-            if !started { path.addLine(to: CGPoint(x: 0, y: y)); started = true }
+            let n = sin(Double(worldX) * 0.004 + 1.2) * 0.6 + sin(Double(worldX) * 0.009 + 3.1) * 0.4
+            let h = peak * CGFloat(0.5 + 0.5 * n)
+            let y = camera.project(CGPoint(x: worldX, y: -h), parallax: parallax, size: size).y
+            path.addLine(to: CGPoint(x: sx, y: y))
+            sx += step
+        }
+        path.addLine(to: CGPoint(x: size.width, y: horizon))
+        path.closeSubpath()
+        ctx.fill(path, with: .color(color.color))
+    }
+
+    private func drawHills(_ ctx: GraphicsContext, _ size: CGSize, _ camera: GardenCamera) {
+        let parallax: CGFloat = 0.6, step: CGFloat = 8
+        let color = GardenPalette.hillBack.lerp(to: GardenPalette.skyBottom, 0.10)
+        let horizon = camera.horizonScreenY(size: size)
+        var path = Path()
+        path.move(to: CGPoint(x: 0, y: size.height))
+        path.addLine(to: CGPoint(x: 0, y: horizon))
+        var sx: CGFloat = 0
+        while sx <= size.width {
+            let worldX = (sx - size.width / 2) / camera.zoom + camera.position.x * parallax
+            let n = sin(Double(worldX) * 0.006 + 0.7)
+            let y = camera.project(CGPoint(x: worldX, y: -10 + CGFloat(n) * 22), parallax: parallax, size: size).y
             path.addLine(to: CGPoint(x: sx, y: y))
             sx += step
         }
@@ -238,219 +198,237 @@ struct GardenSceneView: View {
         ctx.fill(path, with: .color(color.color))
     }
 
-    // MARK: Foreground ground — clean meadow gradient + warm light
-
-    private func drawGround(_ ctx: GraphicsContext, _ size: CGSize, horizon: CGFloat) {
+    private func drawGround(_ ctx: GraphicsContext, _ size: CGSize, _ camera: GardenCamera) {
+        let horizon = camera.horizonScreenY(size: size)
         let h = max(0, size.height - horizon)
-        guard h > 0 else { return }
-        let near = GardenPalette.meadow.lerp(to: GardenPalette.leafDark, 0.28)
+        let deep = GardenPalette.meadow.lerp(to: GardenPalette.leafDark, 0.22)
         ctx.fill(Path(CGRect(x: 0, y: horizon, width: size.width, height: h)),
-                 with: .linearGradient(Gradient(stops: [
-                    .init(color: GardenPalette.hillFront.lerp(to: GardenPalette.skyBottom, 0.12).color, location: 0),
-                    .init(color: GardenPalette.meadow.color, location: 0.35),
-                    .init(color: near.color, location: 1)]),
+                 with: .linearGradient(Gradient(colors: [GardenPalette.meadow.color, deep.color]),
                                        startPoint: CGPoint(x: 0, y: horizon), endPoint: CGPoint(x: 0, y: size.height)))
-        ctx.fill(Path(CGRect(x: 0, y: horizon, width: size.width, height: h)),
-                 with: .linearGradient(Gradient(colors: [GardenPalette.petalYellow.color.opacity(0.14), .clear]),
-                                       startPoint: CGPoint(x: 0, y: horizon), endPoint: CGPoint(x: size.width * 0.85, y: horizon)))
     }
 
-    // MARK: The path — a clear anchor that leads the eye toward the valley
-
-    private func drawPath(_ ctx: GraphicsContext, _ size: CGSize, _ camera: GardenCamera) {
-        let parallax: CGFloat = 1.0
-        let edge = GardenPalette.soilTop.lerp(to: GardenPalette.soilDark, 0.30)
-        let fill = GardenPalette.soilTop
-
-        func center(_ worldY: CGFloat) -> CGPoint {
-            let worldX = sin(Double(worldY) * 0.012) * 34          // gentle S-curve, anchored near origin
-            return camera.project(CGPoint(x: CGFloat(worldX), y: worldY), parallax: parallax, size: size)
-        }
-        func halfWidth(_ worldY: CGFloat) -> CGFloat {
-            let t = max(0, min(1, (worldY - 8) / 320))             // far → near
-            return (3 + 70 * t) * camera.zoom
-        }
-        func ribbon(widen: CGFloat) -> Path {
-            var p = Path()
-            var ys = [CGFloat](); var y: CGFloat = 8; while y <= 330 { ys.append(y); y += 14 }
-            var first = true
-            for wy in ys {
-                let c = center(wy), hw = halfWidth(wy) + widen
-                let pt = CGPoint(x: c.x - hw, y: c.y)
-                if first { p.move(to: pt); first = false } else { p.addLine(to: pt) }
-            }
-            for wy in ys.reversed() {
-                let c = center(wy), hw = halfWidth(wy) + widen
-                p.addLine(to: CGPoint(x: c.x + hw, y: c.y))
-            }
-            p.closeSubpath()
-            return p
-        }
-        ctx.fill(ribbon(widen: max(1, size.width * 0.006)), with: .color(edge.color.opacity(0.9)))
-        ctx.fill(ribbon(widen: 0), with: .color(fill.color))
+    /// A soft, slightly-lighter lawn the home sits on — focuses the eye without a hard edge.
+    private func drawPlot(_ ctx: GraphicsContext, _ size: CGSize, _ camera: GardenCamera) {
+        let c = camera.project(CGPoint(x: 0, y: homeBaseY + 30), parallax: 1.0, size: size)
+        let w = size.width * 1.5
+        let hgt = size.height * 0.5 * camera.zoom
+        ctx.fill(Path(ellipseIn: CGRect(x: c.x - w / 2, y: c.y - hgt / 2, width: w, height: hgt)),
+                 with: .radialGradient(Gradient(colors: [GardenPalette.plotGrass.color, GardenPalette.plotGrass.color.opacity(0)]),
+                                       center: c, startRadius: 0, endRadius: w * 0.5))
     }
 
-    // MARK: Midground — sparse trees on the hill line (muted, not competing)
-
-    private func drawTrees(_ ctx: GraphicsContext, _ size: CGSize, _ camera: GardenCamera,
-                           stage: Int, unit: CGFloat, style: GardenStyle, time: Double) {
-        guard stage >= 3 else { return }
-        let parallax: CGFloat = 0.6, cell: CGFloat = 520
-        let perCell = [0, 0, 0, 1, 1, 2, 2][min(stage, 6)]
-        let (minX, maxX) = camera.visibleWorldX(parallax: parallax, size: size, margin: cell)
-        for c in Int(floor(minX / cell))...Int(ceil(maxX / cell)) {
-            var rng = SeededGenerator(seed: gardenCellSeed(worldSeed, c, 0x77EE))
-            for _ in 0..<perCell {
-                let wx = CGFloat(c) * cell + CGFloat(rng.double(in: 0, Double(cell)))
-                let p = camera.project(CGPoint(x: wx, y: -18), parallax: parallax, size: size)
-                if p.x < -60 || p.x > size.width + 60 { continue }
-                let sway = swayOffset(time: time, phase: rng.double(in: 0, 6), style: style) * unit * 0.4
-                drawTree(ctx, base: p, unit: unit * 1.8, sway: sway)
-            }
-        }
+    private func drawPath(_ ctx: GraphicsContext, _ size: CGSize, _ camera: GardenCamera, unit: CGFloat) {
+        let topW = unit * 2.4, botW = unit * 7
+        let top = camera.project(CGPoint(x: 0, y: homeBaseY + 18), parallax: 1.0, size: size)
+        let bot = camera.project(CGPoint(x: 0, y: homeBaseY + 120), parallax: 1.0, size: size)
+        var p = Path()
+        p.move(to: CGPoint(x: top.x - topW / 2, y: top.y))
+        p.addLine(to: CGPoint(x: top.x + topW / 2, y: top.y))
+        p.addLine(to: CGPoint(x: bot.x + botW / 2, y: bot.y))
+        p.addLine(to: CGPoint(x: bot.x - botW / 2, y: bot.y))
+        p.closeSubpath()
+        ctx.fill(p, with: .color(GardenPalette.soilTop.color.opacity(0.9)))
     }
 
-    // MARK: Foreground — flowers grouped into patches (the focal point)
+    // MARK: Props — composed around the home, filled by unlocks, depth-sorted
 
-    private func drawFlowerPatches(_ ctx: GraphicsContext, _ size: CGSize, _ camera: GardenCamera,
-                                   stage: Int, unit: CGFloat, style: GardenStyle, time: Double) {
-        let parallax: CGFloat = 1.0, cell: CGFloat = 300
-        let patchesPerCell = [1, 1, 2, 2, 3, 3, 4][min(stage, 6)]   // few, intentional groupings
-        let perPatch       = [8, 14, 22, 30, 40, 52, 66][min(stage, 6)]
-        let patchRadius    = [50, 64, 78, 92, 108, 124, 140][min(stage, 6)]
-        let varieties = max(2, min(GardenPalette.flowerVarieties.count, stage + 2))
-        let (minX, maxX) = camera.visibleWorldX(parallax: parallax, size: size, margin: cell)
+    private enum PropKind { case tree, bush, flower, patch, stone, fence, sign, home }
+    private struct Prop { let x: CGFloat; let y: CGFloat; let kind: PropKind; let i: Int }
 
-        struct Flower { let p: CGPoint; let depth: CGFloat; let s: CGFloat; let color: Int; let phase: Double }
-        var flowers: [Flower] = []
+    private func drawProps(_ ctx: GraphicsContext, _ size: CGSize, _ camera: GardenCamera, unit: CGFloat, unlocks u: GardenUnlocks) {
+        let treeSlots:   [(CGFloat, CGFloat)] = [(-150, 36), (150, 30), (-94, 22), (98, 26)]
+        let bushSlots:   [(CGFloat, CGFloat)] = [(-84, 92), (84, 92), (-108, 82), (108, 82)]
+        let flowerSlots: [(CGFloat, CGFloat)] = [(-30, 122), (32, 124), (0, 134), (-58, 128), (58, 130)]
+        let patchSlots:  [(CGFloat, CGFloat)] = [(-126, 118), (130, 122), (-58, 152), (64, 154), (0, 170),
+                                                 (-152, 102), (150, 106), (44, 140)]
+        let stoneSlots:  [(CGFloat, CGFloat)] = [(-112, 136), (118, 140)]
 
-        for c in Int(floor(minX / cell))...Int(ceil(maxX / cell)) {
-            var rng = SeededGenerator(seed: gardenCellSeed(worldSeed, c, 0xF10E))
-            for _ in 0..<patchesPerCell {
-                let cx = CGFloat(c) * cell + CGFloat(rng.double(in: 0, Double(cell)))
-                let cDepth = CGFloat(rng.double(in: 0, 1))
-                let cy = 40 + cDepth * 300
-                let dominant = Int(rng.next() % UInt64(varieties))
-                let rx = CGFloat(patchRadius) * CGFloat(rng.double(in: 0.7, 1.1))
-                let ry = CGFloat(patchRadius) * 0.45
-                for _ in 0..<perPatch {
-                    // centre-biased offset → dense middle, sparse edges (nature grows in clumps)
-                    let b1: Double = (rng.double(in: -1, 1) + rng.double(in: -1, 1)) / 2
-                    let b2: Double = (rng.double(in: -1, 1) + rng.double(in: -1, 1)) / 2
-                    let wx: CGFloat = cx + CGFloat(b1) * rx
-                    let wy: CGFloat = max(18, cy + CGFloat(b2) * ry)
-                    let p = camera.project(CGPoint(x: wx, y: wy), parallax: parallax, size: size)
-                    if p.x < -40 || p.x > size.width + 40 || p.y < -40 || p.y > size.height + 40 { continue }
-                    let depth: CGFloat = max(0, min(1, (wy - 18) / 300))
-                    let s: CGFloat = max(2, unit * (0.7 + depth * 1.6))
-                    let color = rng.double(in: 0, 1) < 0.82 ? dominant : Int(rng.next() % UInt64(varieties))
-                    flowers.append(Flower(p: p, depth: depth, s: s, color: color, phase: rng.double(in: 0, 6.28)))
-                }
+        var props: [Prop] = [Prop(x: 0, y: homeBaseY, kind: .home, i: 0)]
+        if u.hasFence { props.append(Prop(x: 0, y: 56, kind: .fence, i: 0)) }
+        for k in 0..<min(u.trees, treeSlots.count)   { props.append(Prop(x: treeSlots[k].0,   y: treeSlots[k].1,   kind: .tree,   i: k)) }
+        for k in 0..<min(u.bushes, bushSlots.count)  { props.append(Prop(x: bushSlots[k].0,   y: bushSlots[k].1,   kind: .bush,   i: k)) }
+        for k in 0..<min(u.flowers, flowerSlots.count) { props.append(Prop(x: flowerSlots[k].0, y: flowerSlots[k].1, kind: .flower, i: k)) }
+        for k in 0..<min(u.flowerPatches, patchSlots.count) { props.append(Prop(x: patchSlots[k].0, y: patchSlots[k].1, kind: .patch, i: k)) }
+        for k in 0..<min(u.stones, stoneSlots.count) { props.append(Prop(x: stoneSlots[k].0, y: stoneSlots[k].1, kind: .stone, i: k)) }
+        if u.hasSign { props.append(Prop(x: 70, y: 146, kind: .sign, i: 0)) }
+
+        for prop in props.sorted(by: { $0.y < $1.y }) {
+            let p = camera.project(CGPoint(x: prop.x, y: prop.y), parallax: 1.0, size: size)
+            let depth = max(0, min(1, prop.y / 180))
+            let m = 0.7 + depth * 0.7
+            switch prop.kind {
+            case .home:   drawHome(ctx, base: p, hs: unit * 3.0)
+            case .tree:   drawTree(ctx, base: p, s: unit * 3.4 * m)
+            case .bush:   drawBush(ctx, base: p, s: unit * 2.2 * m)
+            case .flower: drawFlower(ctx, base: p, s: unit * 1.4 * m, color: prop.i % GardenPalette.flowerVarieties.count)
+            case .patch:  drawPatch(ctx, base: p, s: unit * 1.3 * m, seedIndex: prop.i)
+            case .stone:  drawStone(ctx, base: p, s: unit * 1.8 * m)
+            case .fence:  drawFence(ctx, size, camera, unit: unit)
+            case .sign:   drawSign(ctx, base: p, s: unit * 2.0 * m)
             }
-        }
-        for f in flowers.sorted(by: { $0.depth < $1.depth }) {
-            let lean = CGFloat(style.droopDegrees) * 0.10 * f.s
-            let sway = swayOffset(time: time, phase: f.phase, style: style) * f.s * 0.5 * (0.4 + f.depth)
-            drawFlower(ctx, base: f.p, s: f.s, petal: GardenPalette.flowerVarieties[f.color], sway: sway + lean)
         }
     }
 
     private func drawCreatures(_ ctx: GraphicsContext, _ size: CGSize, _ camera: GardenCamera,
-                               stage: Int, unit: CGFloat, style: GardenStyle, time: Double) {
-        if stage >= 3 && style.ambientOpacity > 0.4 {
-            let parallax: CGFloat = 1.0, cell: CGFloat = 650
-            let (minX, maxX) = camera.visibleWorldX(parallax: parallax, size: size, margin: cell)
-            for c in Int(floor(minX / cell))...Int(ceil(maxX / cell)) {
-                var rng = SeededGenerator(seed: gardenCellSeed(worldSeed, c, 0xB077))
-                for _ in 0..<Int(rng.double(in: 0, 2)) {
-                    let baseX = CGFloat(c) * cell + CGFloat(rng.double(in: 0, Double(cell)))
-                    let ph = rng.double(in: 0, 6.28)
-                    let wx = baseX + CGFloat(sin(time * 0.4 + ph)) * 40
-                    let wy = 40 + CGFloat(rng.double(in: 0, 130)) + CGFloat(cos(time * 0.6 + ph)) * 16
-                    let p = camera.project(CGPoint(x: wx, y: wy), parallax: parallax, size: size)
-                    if p.x < -20 || p.x > size.width + 20 { continue }
-                    drawButterfly(ctx, at: p, s: unit * 0.8, flap: sin(time * 6 + ph),
-                                  color: GardenPalette.flowerVarieties[Int(rng.next() % 5)])
-                }
-            }
+                               unit: CGFloat, unlocks u: GardenUnlocks, style: GardenStyle, time: Double) {
+        let dim = style.ambientOpacity
+        guard dim > 0.05 else { return }
+        // Butterflies drift over the garden (daytime life).
+        for k in 0..<u.butterflies {
+            let ph = Double(k) * 1.7 + 0.4
+            let wx = CGFloat(-90 + 70 * k) + CGFloat(sin(time * 0.5 + ph)) * 26
+            let wy = 70 + CGFloat(k % 2) * 30 + CGFloat(cos(time * 0.7 + ph)) * 14
+            let p = camera.project(CGPoint(x: wx, y: wy), parallax: 1.0, size: size)
+            drawButterfly(ctx, at: p, s: unit * 1.0, flap: sin(time * 6 + ph),
+                          color: GardenPalette.flowerVarieties[k % 5], alpha: dim)
         }
-        drawParticles(ctx, size, camera, style: style, time: time)
+        // Fireflies drift softly.
+        for k in 0..<u.fireflies {
+            let ph = Double(k) * 0.9 + 1.1
+            let wx = CGFloat(-120 + 36 * k) + CGFloat(sin(time * 0.4 + ph)) * 22
+            let wy = 60 + CGFloat((k * 23) % 90) + CGFloat(cos(time * 0.5 + ph)) * 16
+            let p = camera.project(CGPoint(x: wx, y: wy), parallax: 1.0, size: size)
+            let pulse = 0.5 + 0.5 * sin(time * 1.4 + ph)
+            let a = pulse * dim
+            let gr = unit * 2.2
+            ctx.fill(Path(ellipseIn: CGRect(x: p.x - gr, y: p.y - gr, width: gr * 2, height: gr * 2)),
+                     with: .radialGradient(Gradient(colors: [GardenPalette.firefly.color.opacity(0.5 * a), .clear]),
+                                           center: p, startRadius: 0, endRadius: gr))
+            let cr = max(1.5, unit * 0.5)
+            ctx.fill(Path(ellipseIn: CGRect(x: p.x - cr, y: p.y - cr, width: cr * 2, height: cr * 2)),
+                     with: .color(GardenPalette.firefly.color.opacity(a)))
+        }
     }
 
     private func drawAtmosphere(_ ctx: GraphicsContext, _ size: CGSize) {
         let c = CGPoint(x: size.width / 2, y: size.height / 2)
-        let r = max(size.width, size.height) * 0.75
+        let r = max(size.width, size.height) * 0.78
         ctx.fill(Path(CGRect(origin: .zero, size: size)),
-                 with: .radialGradient(Gradient(stops: [.init(color: .clear, location: 0.62),
-                                                         .init(color: .black.opacity(0.20), location: 1)]),
+                 with: .radialGradient(Gradient(stops: [.init(color: .clear, location: 0.64),
+                                                         .init(color: .black.opacity(0.18), location: 1)]),
                                        center: c, startRadius: 0, endRadius: r))
     }
 
-    private func swayOffset(time: Double, phase: Double, style: GardenStyle) -> CGFloat {
-        guard time != 0, style.swayDegrees > 0 else { return 0 }
-        return CGFloat(sin(time * style.swaySpeed * 2 * .pi + phase)) * CGFloat(style.swayDegrees)
-    }
+    // MARK: Sprites (static — no plant movement)
 
-    // MARK: Sprite primitives
-
-    private func drawFlower(_ ctx: GraphicsContext, base: CGPoint, s: CGFloat, petal: RGB, sway: CGFloat) {
+    private func drawHome(_ ctx: GraphicsContext, base: CGPoint, hs: CGFloat) {
         // grounding shadow
-        ctx.fill(Path(ellipseIn: CGRect(x: base.x - s * 0.9, y: base.y - s * 0.22, width: s * 1.8, height: s * 0.45)),
-                 with: .color(.black.opacity(0.10)))
-        let headX = base.x + sway, headY = base.y - 3 * s
-        let stem = GardenPalette.stemLight.color
-        for i in 0...3 {
-            let t = CGFloat(i) / 3
-            ctx.fill(Path(CGRect(x: base.x + (headX - base.x) * t - s * 0.5, y: base.y + (headY - base.y) * t,
-                                 width: s, height: s)), with: .color(stem))
+        ctx.fill(Path(ellipseIn: CGRect(x: base.x - hs * 4, y: base.y - hs * 0.5, width: hs * 8, height: hs * 1.1)),
+                 with: .color(.black.opacity(0.12)))
+        let w = hs * 7, wallH = hs * 4
+        let wx = base.x - w / 2, wy = base.y - wallH
+        switch homeStyle {
+        case .cottage:
+            rect(ctx, wx, wy, w, wallH, GardenPalette.wallCream)
+            rect(ctx, wx, wy, w, hs * 0.5, GardenPalette.wallCream.lerp(to: .init(r: 255, g: 255, b: 255), 0.3)) // lit top
+            tri(ctx, CGPoint(x: wx - hs, y: wy), CGPoint(x: base.x, y: wy - hs * 3), CGPoint(x: wx + w + hs, y: wy), GardenPalette.roofRed)
+            rect(ctx, wx + w * 0.62, wy - hs * 2.6, hs * 0.9, hs * 2.6, GardenPalette.roofRed.lerp(to: GardenPalette.soilDark, 0.3)) // chimney
+            rect(ctx, base.x - hs * 1.1, base.y - hs * 2.4, hs * 2.2, hs * 2.4, GardenPalette.doorBrown)
+            rect(ctx, wx + hs * 0.8, wy + hs * 1.2, hs * 1.6, hs * 1.6, GardenPalette.windowGlow)
+        case .japanese:
+            rect(ctx, wx, wy, w, wallH, GardenPalette.wallCream.lerp(to: GardenPalette.wallStone, 0.4))
+            // wide low dark roof with upturned eaves
+            tri(ctx, CGPoint(x: wx - hs * 1.6, y: wy + hs * 0.4), CGPoint(x: base.x, y: wy - hs * 1.8), CGPoint(x: wx + w + hs * 1.6, y: wy + hs * 0.4), GardenPalette.roofDark)
+            rect(ctx, wx - hs * 1.6, wy + hs * 0.2, hs * 1.0, hs * 0.5, GardenPalette.roofDark)
+            rect(ctx, wx + w + hs * 0.6, wy + hs * 0.2, hs * 1.0, hs * 0.5, GardenPalette.roofDark)
+            rect(ctx, base.x - hs * 1.4, base.y - hs * 2.6, hs * 2.8, hs * 2.6, GardenPalette.roofDark.lerp(to: GardenPalette.wallStone, 0.2)) // sliding door frame
+            rect(ctx, base.x - hs * 1.1, base.y - hs * 2.3, hs * 2.2, hs * 2.3, GardenPalette.windowGlow.lerp(to: GardenPalette.wallCream, 0.4))
+        case .cabin:
+            for r in 0..<5 {                                   // stacked log courses
+                let shade = r % 2 == 0 ? GardenPalette.wallWood : GardenPalette.wallWood.lerp(to: GardenPalette.soilDark, 0.18)
+                rect(ctx, wx, wy + CGFloat(r) * (wallH / 5), w, wallH / 5, shade)
+            }
+            tri(ctx, CGPoint(x: wx - hs, y: wy), CGPoint(x: base.x, y: wy - hs * 2.8), CGPoint(x: wx + w + hs, y: wy), GardenPalette.roofDark)
+            rect(ctx, wx + w * 0.66, wy - hs * 2.4, hs * 0.9, hs * 2.4, GardenPalette.roofDark.lerp(to: GardenPalette.soilDark, 0.2))
+            rect(ctx, base.x - hs * 1.0, base.y - hs * 2.2, hs * 2.0, hs * 2.2, GardenPalette.doorBrown.lerp(to: GardenPalette.soilDark, 0.2))
+            rect(ctx, wx + hs * 0.9, wy + hs * 1.0, hs * 1.4, hs * 1.4, GardenPalette.windowGlow)
+        case .wizard:
+            let ww = w * 0.82, wwx = base.x - ww / 2
+            rect(ctx, wwx, wy, ww, wallH, GardenPalette.wallWizard)
+            tri(ctx, CGPoint(x: wwx - hs * 0.6, y: wy), CGPoint(x: base.x + hs * 0.4, y: wy - hs * 5), CGPoint(x: wwx + ww + hs * 0.6, y: wy), GardenPalette.roofWizard) // tall crooked roof
+            rect(ctx, base.x - hs * 0.35, wy - hs * 5.6, hs * 0.7, hs * 0.7, GardenPalette.windowGlow)  // orb on top
+            rect(ctx, base.x - hs * 1.0, base.y - hs * 2.2, hs * 2.0, hs * 2.2, GardenPalette.doorBrown)
+            rect(ctx, wwx + hs * 0.7, wy + hs * 1.2, hs * 1.3, hs * 1.3, GardenPalette.windowGlow.lerp(to: GardenPalette.petalPurple, 0.2))
         }
-        let hi = petal.lerp(to: GardenPalette.petalWhite, 0.35)
-        ctx.fill(Path(CGRect(x: headX - s * 0.5, y: headY - 1.5 * s, width: s, height: s)), with: .color(hi.color))
-        ctx.fill(Path(CGRect(x: headX - s * 0.5, y: headY + 0.5 * s, width: s, height: s)), with: .color(petal.color))
-        ctx.fill(Path(CGRect(x: headX - 1.5 * s, y: headY - 0.5 * s, width: s, height: s)), with: .color(hi.color))
-        ctx.fill(Path(CGRect(x: headX + 0.5 * s, y: headY - 0.5 * s, width: s, height: s)), with: .color(petal.color))
-        ctx.fill(Path(CGRect(x: headX - 0.5 * s, y: headY - 0.5 * s, width: s, height: s)),
-                 with: .color(GardenPalette.flowerCenter.color))
     }
 
-    private func drawTree(_ ctx: GraphicsContext, base: CGPoint, unit: CGFloat, sway: CGFloat) {
-        ctx.fill(Path(ellipseIn: CGRect(x: base.x - unit * 1.3, y: base.y - unit * 0.25, width: unit * 2.6, height: unit * 0.6)),
-                 with: .color(.black.opacity(0.10)))
-        let trunkW = unit * 0.7, trunkH = unit * 2.0
-        ctx.fill(Path(CGRect(x: base.x - trunkW / 2, y: base.y - trunkH, width: trunkW, height: trunkH)),
-                 with: .color(GardenPalette.soilDark.color))
-        let cx = base.x + sway, cy = base.y - trunkH - unit, r = unit * 1.6
-        let canopy = GardenPalette.leafMid.lerp(to: GardenPalette.skyBottom, 0.12)
-        ctx.fill(Path(ellipseIn: CGRect(x: cx - r, y: cy - r, width: r * 2, height: r * 2)), with: .color(GardenPalette.leafDark.color))
-        ctx.fill(Path(ellipseIn: CGRect(x: cx - r * 0.8, y: cy - r * 1.0, width: r * 1.6, height: r * 1.6)), with: .color(canopy.color))
+    private func drawTree(_ ctx: GraphicsContext, base: CGPoint, s: CGFloat) {
+        ctx.fill(Path(ellipseIn: CGRect(x: base.x - s * 1.3, y: base.y - s * 0.25, width: s * 2.6, height: s * 0.6)), with: .color(.black.opacity(0.10)))
+        let trunkW = s * 0.7, trunkH = s * 2.2
+        rect(ctx, base.x - trunkW / 2, base.y - trunkH, trunkW, trunkH, GardenPalette.soilDark)
+        let cy = base.y - trunkH - s
+        let r = s * 1.7
+        ctx.fill(Path(ellipseIn: CGRect(x: base.x - r, y: cy - r, width: r * 2, height: r * 2)), with: .color(GardenPalette.leafDark.color))
+        ctx.fill(Path(ellipseIn: CGRect(x: base.x - r * 0.8, y: cy - r * 1.05, width: r * 1.6, height: r * 1.6)), with: .color(GardenPalette.leafMid.color))
+        ctx.fill(Path(ellipseIn: CGRect(x: base.x - r * 0.45, y: cy - r * 1.1, width: r * 0.9, height: r * 0.9)), with: .color(GardenPalette.leafLight.color))
     }
 
-    private func drawButterfly(_ ctx: GraphicsContext, at p: CGPoint, s: CGFloat, flap: Double, color: RGB) {
+    private func drawBush(_ ctx: GraphicsContext, base: CGPoint, s: CGFloat) {
+        ctx.fill(Path(ellipseIn: CGRect(x: base.x - s * 1.2, y: base.y - s * 0.2, width: s * 2.4, height: s * 0.5)), with: .color(.black.opacity(0.10)))
+        for (dx, dy, rr) in [(-0.7, 0.0, 1.0), (0.7, 0.0, 1.0), (0.0, -0.4, 1.2)] as [(CGFloat, CGFloat, CGFloat)] {
+            let r = s * rr
+            ctx.fill(Path(ellipseIn: CGRect(x: base.x + dx * s - r, y: base.y - s * 0.6 + dy * s - r, width: r * 2, height: r * 2)),
+                     with: .color(GardenPalette.leafDark.color))
+        }
+        let r = s * 1.0
+        ctx.fill(Path(ellipseIn: CGRect(x: base.x - r, y: base.y - s * 1.0 - r, width: r * 2, height: r * 2)), with: .color(GardenPalette.leafMid.color))
+    }
+
+    private func drawFlower(_ ctx: GraphicsContext, base: CGPoint, s: CGFloat, color: Int) {
+        let petal = GardenPalette.flowerVarieties[color % GardenPalette.flowerVarieties.count]
+        ctx.fill(Path(ellipseIn: CGRect(x: base.x - s * 0.8, y: base.y - s * 0.2, width: s * 1.6, height: s * 0.4)), with: .color(.black.opacity(0.08)))
+        let headY = base.y - 2.6 * s
+        rect(ctx, base.x - s * 0.25, headY, s * 0.5, 2.6 * s, GardenPalette.stemLight)   // stem (straight, still)
+        let hi = petal.lerp(to: GardenPalette.petalWhite, 0.3)
+        rect(ctx, base.x - s * 0.5, headY - s, s, s, hi)
+        rect(ctx, base.x - s * 1.5, headY, s, s, petal)
+        rect(ctx, base.x + s * 0.5, headY, s, s, petal)
+        rect(ctx, base.x - s * 0.5, headY + s, s, s, hi)
+        rect(ctx, base.x - s * 0.5, headY, s, s, GardenPalette.flowerCenter)
+    }
+
+    /// A composed cluster of a few still flowers (one dominant colour) — a flower bed.
+    private func drawPatch(_ ctx: GraphicsContext, base: CGPoint, s: CGFloat, seedIndex: Int) {
+        var rng = SeededGenerator(seed: gardenCellSeed(worldSeed, seedIndex, 0xBED))
+        let dominant = Int(rng.next() % UInt64(GardenPalette.flowerVarieties.count))
+        let count = 7
+        var pts: [(CGFloat, CGFloat, Int)] = []
+        for _ in 0..<count {
+            let dx = CGFloat(rng.double(in: -1, 1)) * s * 3.2
+            let dy = CGFloat(rng.double(in: -1, 1)) * s * 1.4
+            let col = rng.double(in: 0, 1) < 0.8 ? dominant : Int(rng.next() % UInt64(GardenPalette.flowerVarieties.count))
+            pts.append((dx, dy, col))
+        }
+        for f in pts.sorted(by: { $0.1 < $1.1 }) {
+            drawFlower(ctx, base: CGPoint(x: base.x + f.0, y: base.y + f.1), s: s, color: f.2)
+        }
+    }
+
+    private func drawStone(_ ctx: GraphicsContext, base: CGPoint, s: CGFloat) {
+        ctx.fill(Path(ellipseIn: CGRect(x: base.x - s, y: base.y - s * 0.7, width: s * 2, height: s * 1.1)), with: .color(GardenPalette.mountainRock.color))
+        ctx.fill(Path(ellipseIn: CGRect(x: base.x - s * 0.6, y: base.y - s * 0.7, width: s * 1.1, height: s * 0.6)), with: .color(GardenPalette.wallStone.color.opacity(0.6)))
+    }
+
+    private func drawFence(_ ctx: GraphicsContext, _ size: CGSize, _ camera: GardenCamera, unit: CGFloat) {
+        let postW = unit * 0.7, postH = unit * 2.2
+        for wx in stride(from: CGFloat(-170), through: 170, by: 40) {
+            let p = camera.project(CGPoint(x: wx, y: 56), parallax: 1.0, size: size)
+            rect(ctx, p.x - postW / 2, p.y - postH, postW, postH, GardenPalette.woodFence)
+            let next = camera.project(CGPoint(x: wx + 40, y: 56), parallax: 1.0, size: size)
+            rect(ctx, p.x, p.y - postH * 0.7, max(1, next.x - p.x), postH * 0.28, GardenPalette.woodFence.lerp(to: GardenPalette.soilDark, 0.1))
+        }
+    }
+
+    private func drawSign(_ ctx: GraphicsContext, base: CGPoint, s: CGFloat) {
+        rect(ctx, base.x - s * 0.25, base.y - s * 2.2, s * 0.5, s * 2.2, GardenPalette.soilDark)
+        rect(ctx, base.x - s * 1.3, base.y - s * 2.6, s * 2.6, s * 1.4, GardenPalette.woodFence)
+        rect(ctx, base.x - s * 1.1, base.y - s * 2.4, s * 2.2, s * 1.0, GardenPalette.woodFence.lerp(to: GardenPalette.petalWhite, 0.2))
+    }
+
+    private func drawButterfly(_ ctx: GraphicsContext, at p: CGPoint, s: CGFloat, flap: Double, color: RGB, alpha: Double) {
         let w = s * (0.5 + 0.5 * abs(flap))
-        ctx.fill(Path(ellipseIn: CGRect(x: p.x - w, y: p.y - s * 0.6, width: w, height: s * 1.2)), with: .color(color.color))
-        ctx.fill(Path(ellipseIn: CGRect(x: p.x, y: p.y - s * 0.6, width: w, height: s * 1.2)), with: .color(color.color))
-        ctx.fill(Path(CGRect(x: p.x - s * 0.08, y: p.y - s * 0.6, width: s * 0.16, height: s * 1.2)), with: .color(GardenPalette.soilDark.color))
-    }
-
-    private func drawParticles(_ ctx: GraphicsContext, _ size: CGSize, _ camera: GardenCamera, style: GardenStyle, time: Double) {
-        guard style.ambientOpacity > 0.01 else { return }
-        var rng = SeededGenerator(seed: snapshot.renderSeed)
-        let horizon = camera.horizonScreenY(size: size)
-        let bandTop = horizon * 0.75, bandBottom = horizon + (size.height - horizon) * 0.5
-        for _ in 0..<style.fireflyCount {
-            let bx = rng.double(in: 0.12, 0.88) * Double(size.width)
-            let by = Double(bandTop) + rng.double(in: 0, 1) * Double(bandBottom - bandTop)
-            let phase = rng.double(in: 0, 2 * .pi)
-            let x = bx + sin(time * 0.6 + phase) * Double(size.width) * 0.035
-            let y = by + cos(time * 0.45 + phase) * Double(size.height) * 0.025
-            let alpha = (0.5 + 0.45 * sin(time * 1.3 + phase)) * style.ambientOpacity
-            let glowR = Double(size.height) * 0.04
-            ctx.fill(Path(ellipseIn: CGRect(x: x - glowR, y: y - glowR, width: glowR * 2, height: glowR * 2)),
-                     with: .radialGradient(Gradient(colors: [GardenPalette.firefly.color.opacity(0.5 * alpha), .clear]),
-                                           center: CGPoint(x: x, y: y), startRadius: 0, endRadius: glowR))
-            let coreR = max(1.5, Double(size.height) * 0.01)
-            ctx.fill(Path(ellipseIn: CGRect(x: x - coreR, y: y - coreR, width: coreR * 2, height: coreR * 2)),
-                     with: .color(GardenPalette.firefly.color.opacity(alpha)))
-        }
+        ctx.fill(Path(ellipseIn: CGRect(x: p.x - w, y: p.y - s * 0.6, width: w, height: s * 1.2)), with: .color(color.color.opacity(alpha)))
+        ctx.fill(Path(ellipseIn: CGRect(x: p.x, y: p.y - s * 0.6, width: w, height: s * 1.2)), with: .color(color.color.opacity(alpha)))
+        rect(ctx, p.x - s * 0.08, p.y - s * 0.6, s * 0.16, s * 1.2, GardenPalette.soilDark, alpha)
     }
 }

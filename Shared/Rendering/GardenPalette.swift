@@ -69,4 +69,18 @@ enum GardenPalette {
 
     /// The flower varieties unlocked as the world grows (index 0 first).
     static let flowerVarieties: [RGB] = [petalPink, petalYellow, petalWhite, petalPurple, petalCoral, flowerCenter]
+
+    // MARK: Home + props (the cozy focal point)
+    static let wallCream  = RGB(r: 244, g: 234, b: 210)
+    static let wallWood   = RGB(r: 168, g: 120, b: 82)
+    static let wallStone  = RGB(r: 206, g: 204, b: 198)
+    static let wallWizard = RGB(r: 196, g: 186, b: 214)
+    static let roofRed    = RGB(r: 188, g: 96,  b: 78)
+    static let roofDark   = RGB(r: 78,  g: 86,  b: 102)
+    static let roofThatch = RGB(r: 198, g: 162, b: 96)
+    static let roofWizard = RGB(r: 120, g: 96,  b: 168)
+    static let doorBrown  = RGB(r: 112, g: 76,  b: 52)
+    static let windowGlow = RGB(r: 250, g: 224, b: 148)
+    static let woodFence  = RGB(r: 158, g: 122, b: 86)
+    static let plotGrass  = RGB(r: 146, g: 190, b: 112)
 }
