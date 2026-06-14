@@ -83,4 +83,10 @@ enum GardenPalette {
     static let windowGlow = RGB(r: 250, g: 224, b: 148)
     static let woodFence  = RGB(r: 158, g: 122, b: 86)
     static let plotGrass  = RGB(r: 146, g: 190, b: 112)
+
+    // MARK: Lake area
+    static let water       = RGB(r: 118, g: 168, b: 198)
+    static let waterLight  = RGB(r: 172, g: 208, b: 228)
+    static let lilyPad     = RGB(r: 92,  g: 150, b: 92)
+    static let duckBody    = RGB(r: 244, g: 242, b: 236)
 }
