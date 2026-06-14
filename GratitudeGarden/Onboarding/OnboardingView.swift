@@ -52,7 +52,7 @@ struct OnboardingView: View {
 
     private func slideView(_ slide: Slide) -> some View {
         VStack(spacing: 20) {
-            GardenSceneView(snapshot: slide.snapshot)
+            GardenSceneView(snapshot: slide.snapshot, interactive: false)
                 .aspectRatio(1, contentMode: .fit)
                 .frame(maxWidth: 280)
                 .clipShape(RoundedRectangle(cornerRadius: 22))
